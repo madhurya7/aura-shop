@@ -66,7 +66,9 @@ export default function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem className="text-xs text-muted-foreground" disabled>
-                  {user.email}
+                  {user.user_metadata?.first_name
+                    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ""}`.trim()
+                    : user.email}
                 </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => navigate("/admin")}>
