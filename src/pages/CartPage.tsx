@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
-  const { data: products } = useProducts();
+  const { data: products } = useAllProducts();
   const navigate = useNavigate();
 
   const getStock = (productId: string) => {

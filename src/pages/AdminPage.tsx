@@ -57,7 +57,7 @@ const emptyForm: ProductForm = {
 
 export default function AdminPage() {
   const { isAdmin, loading: adminLoading, user } = useAdminCheck();
-  const { data: products, isLoading } = useProducts();
+  const { data: products, isLoading } = useAllProducts();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
