@@ -37,6 +37,25 @@ serve(async (req) => {
     if (!items?.length) throw new Error("No items provided");
     if (!email) throw new Error("Email is required");
 
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Validate stock availability before proceeding
+    for (const item of items) {
+      const { data: product, error } = await serviceClient
+        .from("products")
+        .select("stock_quantity, name")
+        .eq("id", item.productId)
+        .single();
+
+      if (error || !product) throw new Error(`Product not found: ${item.productId}`);
+      if (product.stock_quantity < item.quantity) {
+        throw new Error(`Insufficient stock for "${product.name}": only ${product.stock_quantity} available`);
+      }
+    }
+
     // Check/create Stripe customer
     const customers = await stripe.customers.list({ email, limit: 1 });
     let customerId: string | undefined;
@@ -72,12 +91,6 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    // Create order in database
-    const serviceClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
     const totalPrice = items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0);
 
     const { data: order, error: orderError } = await serviceClient
@@ -105,6 +118,14 @@ serve(async (req) => {
       }));
 
       await serviceClient.from("order_items").insert(orderItems);
+
+      // Decrement stock for each product
+      for (const item of items) {
+        await serviceClient.rpc("decrement_stock", {
+          p_product_id: item.productId,
+          p_quantity: item.quantity,
+        });
+      }
     }
 
     return new Response(JSON.stringify({ url: session.url }), {
