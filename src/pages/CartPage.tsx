@@ -82,6 +82,12 @@ export default function CartPage() {
                       <Plus className="h-3 w-3" />
                     </Button>
                   </div>
+                  {!overStock && item.quantity >= stock && stock !== Infinity && (
+                    <p className="text-xs text-muted-foreground mt-1 text-right">
+                      Max stock reached ({stock} available)
+                    </p>
+                  )}
+                  </div>
                 </div>
               </div>
             );
