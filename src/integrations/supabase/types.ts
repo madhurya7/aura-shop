@@ -157,6 +157,50 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          order_id: string
+          payment_method: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          stripe_charge_id: string | null
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id: string
+          payment_method?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string
+          payment_method?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"]
+          stripe_charge_id?: string | null
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_reviews: {
         Row: {
           created_at: string
@@ -286,6 +330,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user"
       order_status: "pending" | "paid" | "shipped" | "delivered" | "cancelled"
+      payment_status:
+        | "requires_payment_method"
+        | "requires_action"
+        | "processing"
+        | "succeeded"
+        | "failed"
+        | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -415,6 +466,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       order_status: ["pending", "paid", "shipped", "delivered", "cancelled"],
+      payment_status: [
+        "requires_payment_method",
+        "requires_action",
+        "processing",
+        "succeeded",
+        "failed",
+        "refunded",
+      ],
     },
   },
 } as const
