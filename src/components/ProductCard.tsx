@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { getProductImage } from "@/lib/productImages";
 import type { Product } from "@/hooks/useProducts";
 import { Badge } from "@/components/ui/badge";
+import StarRating from "@/components/StarRating";
+import type { ProductRating } from "@/hooks/useReviews";
 
 interface ProductCardProps {
   product: Product;
