@@ -78,8 +78,8 @@ export default function CartPage() {
                 <span>${totalPrice.toFixed(2)}</span>
               </div>
             </div>
-            <Button className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90" size="lg">
-              Proceed to Checkout
+            <Button className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90" size="lg" asChild>
+              <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-3">Taxes and shipping calculated at checkout</p>
           </div>
