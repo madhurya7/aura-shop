@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useProduct } from "@/hooks/useProducts";
+import { useProductRating } from "@/hooks/useReviews";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Minus, Plus, ArrowLeft } from "lucide-react";
@@ -8,6 +9,8 @@ import { toast } from "sonner";
 import { getProductImage } from "@/lib/productImages";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import StarRating from "@/components/StarRating";
+import ProductReviews from "@/components/ProductReviews";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -15,6 +18,7 @@ export default function ProductDetail() {
   const { addItem, items } = useCart();
   const [qty, setQty] = useState(1);
   const { data: product, isLoading } = useProduct(id || "");
+  const { data: ratingData } = useProductRating(id || "");
 
   const cartItem = items.find((i) => i.productId === id);
   const cartQty = cartItem?.quantity || 0;
@@ -102,6 +106,11 @@ export default function ProductDetail() {
           <p className="text-sm text-muted-foreground uppercase tracking-wider">{product.category}</p>
           <h1 className="font-heading text-3xl font-bold mt-1">{product.name}</h1>
           <p className="font-heading text-3xl font-bold text-accent mt-4">${Number(product.price).toFixed(2)}</p>
+          {ratingData && ratingData.review_count > 0 && (
+            <div className="mt-2">
+              <StarRating rating={ratingData.avg_rating} showValue reviewCount={ratingData.review_count} size="md" />
+            </div>
+          )}
           <p className="text-muted-foreground mt-4 leading-relaxed">{product.description}</p>
 
           <div className="flex items-center gap-3 mt-8">
@@ -131,6 +140,8 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      <ProductReviews productId={product.id} />
     </div>
   );
 }

@@ -6,13 +6,16 @@ import { toast } from "sonner";
 import { getProductImage } from "@/lib/productImages";
 import type { Product } from "@/hooks/useProducts";
 import { Badge } from "@/components/ui/badge";
+import StarRating from "@/components/StarRating";
+import type { ProductRating } from "@/hooks/useReviews";
 
 interface ProductCardProps {
   product: Product;
   index?: number;
+  rating?: ProductRating;
 }
 
-export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+export default function ProductCard({ product, index = 0, rating }: ProductCardProps) {
   const { addItem, items } = useCart();
   const isOutOfStock = product.stock_quantity <= 0;
   const cartItem = items.find((i) => i.productId === product.id);
@@ -53,6 +56,9 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">{product.category}</p>
           <h3 className="font-heading font-semibold leading-tight">{product.name}</h3>
+          {rating && rating.review_count > 0 && (
+            <StarRating rating={rating.avg_rating} showValue reviewCount={rating.review_count} size="sm" />
+          )}
           <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
           <div className="flex items-center justify-between pt-2">
             <span className="font-heading text-lg font-bold">${Number(product.price).toFixed(2)}</span>

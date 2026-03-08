@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
+import { useProductRatings } from "@/hooks/useReviews";
 import HeroSection from "@/components/HeroSection";
 import ProductCard from "@/components/ProductCard";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -11,6 +12,9 @@ const Index = () => {
   const searchQuery = searchParams.get("search") || "";
   const [category, setCategory] = useState<string | null>(null);
   const { data: products, isLoading } = useProducts();
+
+  const productIds = useMemo(() => (products || []).map((p) => p.id), [products]);
+  const { data: ratingsMap } = useProductRatings(productIds);
 
   const filtered = useMemo(() => {
     if (!products) return [];
@@ -68,7 +72,7 @@ const Index = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filtered.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
+              <ProductCard key={product.id} product={product} index={i} rating={ratingsMap?.[product.id]} />
             ))}
           </div>
         )}

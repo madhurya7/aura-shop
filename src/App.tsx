@@ -15,6 +15,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmationPage from "./pages/OrderConfirmationPage";
 import AdminPage from "./pages/AdminPage";
+import OrdersPage from "./pages/OrdersPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
