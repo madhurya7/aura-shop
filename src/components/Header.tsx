@@ -31,7 +31,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center gap-4">
         <Link to="/" className="font-heading text-xl font-bold tracking-tight shrink-0">
-          VOLT<span className="text-accent">.</span>
+          ARTISAN<span className="text-accent">.</span>
         </Link>
 
         <form onSubmit={handleSearch} className="relative flex-1 max-w-md hidden sm:block">

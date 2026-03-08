@@ -10,16 +10,16 @@ export default function HeroSection() {
   return (
     <section className="relative overflow-hidden rounded-2xl mx-4 mt-4 lg:mx-0">
       <div className="absolute inset-0">
-        <img src={heroBanner} alt="Premium tech accessories" className="h-full w-full object-cover" />
+        <img src={heroBanner} alt="Artisan handcrafted goods collection" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />
       </div>
       <div className="relative px-8 py-20 sm:px-12 sm:py-28 lg:py-36 max-w-xl">
         <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-foreground leading-tight">
-          Premium Tech,<br />
-          <span className="text-accent">Minimal</span> Design.
+          Handcrafted with<br />
+          <span className="text-accent">Heart</span> & Soul.
         </h1>
         <p className="mt-4 text-primary-foreground/80 text-base sm:text-lg max-w-md">
-          Curated collection of essential tech accessories that blend form and function.
+          Discover our curated collection of artisan goods — handloom fabrics, handmade jewelry, pottery, and more.
         </p>
         <Button
           onClick={scrollToProducts}
