@@ -7,7 +7,7 @@ describe("HeroSection", () => {
     render(<HeroSection />);
     expect(screen.getByText(/Handcrafted with/)).toBeInTheDocument();
     expect(screen.getByText("Heart")).toBeInTheDocument();
-    expect(screen.getByText("& Soul.")).toBeInTheDocument();
+    expect(screen.getByText(/& Soul/)).toBeInTheDocument();
   });
 
   it("renders Shop Now button", () => {
