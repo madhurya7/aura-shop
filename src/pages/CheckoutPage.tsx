@@ -1,19 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useAddresses, type Address } from "@/hooks/useAddresses";
+import { useAddressMutations } from "@/hooks/useAddresses";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Plus, MapPin, Star, Loader2 } from "lucide-react";
+
+const emptyAddress = {
+  name: "",
+  address_line1: "",
+  city: "",
+  state: "",
+  postal_code: "",
+  country: "US",
+  is_default: false,
+};
 
 export default function CheckoutPage() {
   const { user } = useAuth();
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  const { data: addresses, isLoading: addressesLoading } = useAddresses();
+  const { addAddress } = useAddressMutations();
+
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newAddress, setNewAddress] = useState(emptyAddress);
 
   const [form, setForm] = useState({
     email: user?.email || "",
@@ -25,7 +51,52 @@ export default function CheckoutPage() {
     country: "US",
   });
 
-  const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
+  // Auto-select default address when addresses load
+  useEffect(() => {
+    if (addresses && addresses.length > 0 && !selectedAddressId) {
+      const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
+      setSelectedAddressId(defaultAddr.id);
+      populateFromAddress(defaultAddr);
+    }
+  }, [addresses]);
+
+  const populateFromAddress = (addr: Address) => {
+    setForm((prev) => ({
+      ...prev,
+      name: addr.name,
+      address_line1: addr.address_line1,
+      city: addr.city,
+      state: addr.state,
+      postal_code: addr.postal_code,
+      country: addr.country,
+    }));
+  };
+
+  const handleSelectAddress = (addr: Address) => {
+    setSelectedAddressId(addr.id);
+    populateFromAddress(addr);
+  };
+
+  const handleAddNewAddress = async () => {
+    if (!newAddress.name || !newAddress.address_line1 || !newAddress.city || !newAddress.postal_code) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      await addAddress.mutateAsync(newAddress);
+      toast.success("Address saved");
+      setShowAddDialog(false);
+      setNewAddress(emptyAddress);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save address");
+    }
+  };
+
+  const update = (field: string, value: string) => {
+    setForm((p) => ({ ...p, [field]: value }));
+    setSelectedAddressId(null); // User is manually editing
+  };
 
   if (items.length === 0) {
     return (
@@ -44,7 +115,6 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Call Stripe checkout edge function
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
           items: items.map((i) => ({
@@ -104,12 +174,76 @@ export default function CheckoutPage() {
           <h2 className="font-heading text-lg font-semibold">Contact</h2>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} required placeholder="you@example.com" />
+            <Input
+              id="email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              required
+              placeholder="you@example.com"
+            />
           </div>
         </section>
 
         <section className="space-y-4">
-          <h2 className="font-heading text-lg font-semibold">Shipping Address</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-lg font-semibold">Shipping Address</h2>
+            {user && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddDialog(true)}
+                disabled={addresses && addresses.length >= 5}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                {addresses && addresses.length >= 5 ? "Max 5 reached" : "Save New"}
+              </Button>
+            )}
+          </div>
+
+          {/* Saved addresses selector */}
+          {user && !addressesLoading && addresses && addresses.length > 0 && (
+            <div className="grid gap-2">
+              {addresses.map((addr) => (
+                <button
+                  key={addr.id}
+                  type="button"
+                  onClick={() => handleSelectAddress(addr)}
+                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
+                    selectedAddressId === addr.id
+                      ? "border-accent bg-accent/5 ring-1 ring-accent"
+                      : "border-border hover:border-muted-foreground/30"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{addr.name}</span>
+                        {addr.is_default && (
+                          <span className="inline-flex items-center gap-1 text-xs text-accent">
+                            <Star className="h-3 w-3 fill-current" /> Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {addr.address_line1}, {addr.city}, {addr.state} {addr.postal_code}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {user && addressesLoading && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading saved addresses...
+            </div>
+          )}
+
+          {/* Manual address fields */}
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" value={form.name} onChange={(e) => update("name", e.target.value)} required />
@@ -145,7 +279,9 @@ export default function CheckoutPage() {
           <div className="space-y-2 text-sm">
             {items.map((item) => (
               <div key={item.productId} className="flex justify-between">
-                <span className="text-muted-foreground truncate mr-2">{item.name} × {item.quantity}</span>
+                <span className="text-muted-foreground truncate mr-2">
+                  {item.name} × {item.quantity}
+                </span>
                 <span>${(item.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
@@ -166,6 +302,63 @@ export default function CheckoutPage() {
         </Button>
         <p className="text-xs text-center text-muted-foreground">You'll be redirected to Stripe for secure payment</p>
       </form>
+
+      {/* Add Address Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save New Address</DialogTitle>
+            <DialogDescription>Add a shipping address to your account (max 5).</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>Full Name *</Label>
+              <Input value={newAddress.name} onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })} />
+            </div>
+            <div>
+              <Label>Address *</Label>
+              <Input value={newAddress.address_line1} onChange={(e) => setNewAddress({ ...newAddress, address_line1: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>City *</Label>
+                <Input value={newAddress.city} onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })} />
+              </div>
+              <div>
+                <Label>State</Label>
+                <Input value={newAddress.state} onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Postal Code *</Label>
+                <Input value={newAddress.postal_code} onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })} />
+              </div>
+              <div>
+                <Label>Country</Label>
+                <Input value={newAddress.country} onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })} />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="setDefault"
+                checked={newAddress.is_default}
+                onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
+                className="rounded"
+              />
+              <Label htmlFor="setDefault" className="text-sm cursor-pointer">Set as default address</Label>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>Cancel</Button>
+              <Button type="button" onClick={handleAddNewAddress} disabled={addAddress.isPending}>
+                {addAddress.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Save Address
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

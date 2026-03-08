@@ -21,6 +21,7 @@ export type Database = {
           country: string
           created_at: string
           id: string
+          is_default: boolean
           name: string
           postal_code: string
           state: string
@@ -32,6 +33,7 @@ export type Database = {
           country?: string
           created_at?: string
           id?: string
+          is_default?: boolean
           name: string
           postal_code: string
           state?: string
@@ -43,6 +45,7 @@ export type Database = {
           country?: string
           created_at?: string
           id?: string
+          is_default?: boolean
           name?: string
           postal_code?: string
           state?: string
