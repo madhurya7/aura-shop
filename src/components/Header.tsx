@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, User, LogOut } from "lucide-react";
+import { ShoppingCart, Search, User, LogOut, Shield } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +16,7 @@ import { useState } from "react";
 export default function Header() {
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdminCheck();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
@@ -58,6 +60,11 @@ export default function Header() {
                 <DropdownMenuItem className="text-xs text-muted-foreground" disabled>
                   {user.email}
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <Shield className="h-4 w-4 mr-2" /> Admin Dashboard
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => { signOut(); navigate("/"); }}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign out
                 </DropdownMenuItem>
