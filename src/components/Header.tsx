@@ -16,6 +16,7 @@ import { useState } from "react";
 export default function Header() {
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdminCheck();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
