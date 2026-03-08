@@ -1,16 +1,19 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import HeroSection from "@/components/HeroSection";
 import ProductCard from "@/components/ProductCard";
 import CategoryFilter from "@/components/CategoryFilter";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
   const [category, setCategory] = useState<string | null>(null);
+  const { data: products, isLoading } = useProducts();
 
   const filtered = useMemo(() => {
+    if (!products) return [];
     return products.filter((p) => {
       const matchesCategory = !category || p.category === category;
       const matchesSearch =
@@ -19,7 +22,12 @@ const Index = () => {
         p.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [category, searchQuery]);
+  }, [products, category, searchQuery]);
+
+  const categories = useMemo(() => {
+    if (!products) return [];
+    return [...new Set(products.map((p) => p.category))];
+  }, [products]);
 
   return (
     <div className="min-h-screen">
@@ -35,10 +43,25 @@ const Index = () => {
               {filtered.length} product{filtered.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <CategoryFilter selected={category} onSelect={setCategory} />
+          <CategoryFilter selected={category} onSelect={setCategory} categories={categories} />
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-square rounded-lg" />
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-full" />
+                <div className="flex justify-between pt-2">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-muted-foreground text-lg">No products found.</p>
           </div>
