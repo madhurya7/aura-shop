@@ -16,6 +16,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmationPage from "./pages/OrderConfirmationPage";
 import AdminPage from "./pages/AdminPage";
 import OrdersPage from "./pages/OrdersPage";
+import FavoritesPage from "./pages/FavoritesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/favorites" element={<FavoritesPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

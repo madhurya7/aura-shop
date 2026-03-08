@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Product {
@@ -12,9 +12,49 @@ export interface Product {
   created_at: string;
 }
 
-export function useProducts() {
+const PAGE_SIZE = 10;
+const MAX_PRODUCTS = 100;
+
+export function useProducts(search?: string, category?: string | null) {
+  return useInfiniteQuery({
+    queryKey: ["products", search || "", category || ""],
+    queryFn: async ({ pageParam = 0 }): Promise<{ products: Product[]; nextPage: number | null }> => {
+      const from = pageParam * PAGE_SIZE;
+      if (from >= MAX_PRODUCTS) return { products: [], nextPage: null };
+
+      const to = Math.min(from + PAGE_SIZE - 1, MAX_PRODUCTS - 1);
+
+      let query = supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);
+      }
+      if (category) {
+        query = query.eq("category", category);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const products = (data || []) as Product[];
+      const nextPage = products.length === PAGE_SIZE && (from + PAGE_SIZE) < MAX_PRODUCTS
+        ? pageParam + 1
+        : null;
+
+      return { products, nextPage };
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
+  });
+}
+
+export function useAllProducts() {
   return useQuery({
-    queryKey: ["products"],
+    queryKey: ["all-products"],
     queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from("products")

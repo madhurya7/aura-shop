@@ -1,5 +1,5 @@
 import { useCart } from "@/context/CartContext";
-import { useProducts } from "@/hooks/useProducts";
+import { useAllProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, AlertTriangle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
-  const { data: products } = useProducts();
+  const { data: products } = useAllProducts();
   const navigate = useNavigate();
 
   const getStock = (productId: string) => {

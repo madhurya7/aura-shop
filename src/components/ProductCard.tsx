@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { useFavorites, useToggleFavorite } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { getProductImage } from "@/lib/productImages";
 import type { Product } from "@/hooks/useProducts";
@@ -17,6 +19,11 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, index = 0, rating }: ProductCardProps) {
   const { addItem, items } = useCart();
+  const { user } = useAuth();
+  const { data: favoriteSet } = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  const isFavorited = favoriteSet?.has(product.id) || false;
+
   const isOutOfStock = product.stock_quantity <= 0;
   const cartItem = items.find((i) => i.productId === product.id);
   const cartQty = cartItem?.quantity || 0;
@@ -37,6 +44,23 @@ export default function ProductCard({ product, index = 0, rating }: ProductCardP
     }
   };
 
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      toast.error("Sign in to save favorites");
+      return;
+    }
+    toggleFavorite.mutate(
+      { productId: product.id, isFavorited },
+      {
+        onSuccess: () => {
+          toast.success(isFavorited ? "Removed from favorites" : "Added to favorites");
+        },
+      }
+    );
+  };
+
   return (
     <div className="group animate-fade-in" style={{ animationDelay: `${index * 60}ms` }}>
       <Link to={`/product/${product.id}`} className="block">
@@ -52,6 +76,14 @@ export default function ProductCard({ product, index = 0, rating }: ProductCardP
               Out of Stock
             </Badge>
           )}
+          <button
+            onClick={handleFavorite}
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background"
+          >
+            <Heart
+              className={`h-4 w-4 transition-colors ${isFavorited ? "fill-destructive text-destructive" : "text-muted-foreground"}`}
+            />
+          </button>
         </div>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">{product.category}</p>
