@@ -15,7 +15,7 @@ interface ProductCardProps {
   rating?: ProductRating;
 }
 
-export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+export default function ProductCard({ product, index = 0, rating }: ProductCardProps) {
   const { addItem, items } = useCart();
   const isOutOfStock = product.stock_quantity <= 0;
   const cartItem = items.find((i) => i.productId === product.id);
