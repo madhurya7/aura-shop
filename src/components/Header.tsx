@@ -60,6 +60,11 @@ export default function Header() {
                 <DropdownMenuItem className="text-xs text-muted-foreground" disabled>
                   {user.email}
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <Shield className="h-4 w-4 mr-2" /> Admin Dashboard
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => { signOut(); navigate("/"); }}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign out
                 </DropdownMenuItem>
