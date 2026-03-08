@@ -1,12 +1,29 @@
 import { useCart } from "@/context/CartContext";
+import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, AlertTriangle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getProductImage } from "@/lib/productImages";
+import { toast } from "sonner";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
+  const { data: products } = useProducts();
   const navigate = useNavigate();
+
+  const getStock = (productId: string) => {
+    const p = products?.find((p) => p.id === productId);
+    return p?.stock_quantity ?? Infinity;
+  };
+
+  const handleIncrease = (productId: string, currentQty: number) => {
+    const stock = getStock(productId);
+    if (currentQty >= stock) {
+      toast.error(`Only ${stock} available in stock`);
+      return;
+    }
+    updateQuantity(productId, currentQty + 1, stock);
+  };
 
   if (items.length === 0) {
     return (
@@ -31,34 +48,44 @@ export default function CartPage() {
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
-          {items.map((item) => (
-            <div key={item.productId} className="flex gap-4 p-4 rounded-xl border bg-card">
-              <Link to={`/product/${item.productId}`} className="shrink-0">
-                <img src={getProductImage(item.image_url)} alt={item.name} className="h-24 w-24 rounded-lg object-cover" />
-              </Link>
-              <div className="flex-1 min-w-0">
-                <Link to={`/product/${item.productId}`}>
-                  <h3 className="font-heading font-semibold truncate">{item.name}</h3>
+          {items.map((item) => {
+            const stock = getStock(item.productId);
+            const overStock = item.quantity > stock;
+            return (
+              <div key={item.productId} className={`flex gap-4 p-4 rounded-xl border bg-card ${overStock ? "border-destructive/50" : ""}`}>
+                <Link to={`/product/${item.productId}`} className="shrink-0">
+                  <img src={getProductImage(item.image_url)} alt={item.name} className="h-24 w-24 rounded-lg object-cover" />
                 </Link>
-                <p className="text-sm text-muted-foreground">{item.category}</p>
-                <p className="font-heading font-bold mt-1">${Number(item.price).toFixed(2)}</p>
-              </div>
-              <div className="flex flex-col items-end justify-between">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => removeItem(item.productId)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <div className="flex items-center border rounded-lg">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>
-                    <Minus className="h-3 w-3" />
+                <div className="flex-1 min-w-0">
+                  <Link to={`/product/${item.productId}`}>
+                    <h3 className="font-heading font-semibold truncate">{item.name}</h3>
+                  </Link>
+                  <p className="text-sm text-muted-foreground">{item.category}</p>
+                  <p className="font-heading font-bold mt-1">${Number(item.price).toFixed(2)}</p>
+                  {overStock && (
+                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      Only {stock} available — please reduce quantity
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col items-end justify-between">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => removeItem(item.productId)}>
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                  <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.productId, item.quantity + 1)}>
-                    <Plus className="h-3 w-3" />
-                  </Button>
+                  <div className="flex items-center border rounded-lg">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleIncrease(item.productId, item.quantity)} disabled={item.quantity >= stock}>
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="lg:col-span-1">

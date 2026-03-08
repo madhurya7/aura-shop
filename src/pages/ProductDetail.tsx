@@ -7,13 +7,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getProductImage } from "@/lib/productImages";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
   const [qty, setQty] = useState(1);
   const { data: product, isLoading } = useProduct(id || "");
+
+  const cartItem = items.find((i) => i.productId === id);
+  const cartQty = cartItem?.quantity || 0;
 
   if (isLoading) {
     return (
@@ -41,12 +45,35 @@ export default function ProductDetail() {
     );
   }
 
+  const isOutOfStock = product.stock_quantity <= 0;
+  const maxCanAdd = product.stock_quantity - cartQty;
+
   const handleAddToCart = () => {
-    addItem(product, qty);
-    toast.success(`${qty}x ${product.name} added to cart`);
+    if (isOutOfStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
+    if (qty > maxCanAdd) {
+      toast.error(`Only ${maxCanAdd} more can be added (${cartQty} already in cart)`);
+      return;
+    }
+    const added = addItem(product, qty);
+    if (added) {
+      toast.success(`${qty}x ${product.name} added to cart`);
+    } else {
+      toast.error(`Cannot exceed available stock (${product.stock_quantity} total)`);
+    }
   };
 
   const handleBuyNow = () => {
+    if (isOutOfStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
+    if (qty > maxCanAdd) {
+      toast.error(`Only ${maxCanAdd} more can be added`);
+      return;
+    }
     addItem(product, qty);
     navigate("/cart");
   };
@@ -58,8 +85,17 @@ export default function ProductDetail() {
       </Button>
 
       <div className="grid md:grid-cols-2 gap-10 animate-fade-in">
-        <div className="aspect-square overflow-hidden rounded-xl bg-secondary">
-          <img src={getProductImage(product.image_url)} alt={product.name} className="h-full w-full object-cover" />
+        <div className="aspect-square overflow-hidden rounded-xl bg-secondary relative">
+          <img
+            src={getProductImage(product.image_url)}
+            alt={product.name}
+            className={`h-full w-full object-cover ${isOutOfStock ? "opacity-50" : ""}`}
+          />
+          {isOutOfStock && (
+            <Badge variant="destructive" className="absolute top-4 left-4 text-base px-4 py-1">
+              Out of Stock
+            </Badge>
+          )}
         </div>
 
         <div className="flex flex-col justify-center">
@@ -71,23 +107,26 @@ export default function ProductDetail() {
           <div className="flex items-center gap-3 mt-8">
             <span className="text-sm text-muted-foreground">Qty</span>
             <div className="flex items-center border rounded-lg">
-              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQty(Math.max(1, qty - 1))}>
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQty(Math.max(1, qty - 1))} disabled={isOutOfStock}>
                 <Minus className="h-4 w-4" />
               </Button>
               <span className="w-10 text-center font-medium">{qty}</span>
-              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQty(qty + 1)}>
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setQty(Math.min(maxCanAdd, qty + 1))} disabled={isOutOfStock || qty >= maxCanAdd}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <span className="text-xs text-muted-foreground">{product.stock_quantity} in stock</span>
+            <span className={`text-xs ${isOutOfStock ? "text-destructive font-medium" : "text-muted-foreground"}`}>
+              {isOutOfStock ? "Out of stock" : `${product.stock_quantity} in stock`}
+              {cartQty > 0 && !isOutOfStock && ` (${cartQty} in cart)`}
+            </span>
           </div>
 
           <div className="flex gap-3 mt-6">
-            <Button onClick={handleAddToCart} variant="outline" className="flex-1 gap-2">
-              <ShoppingCart className="h-4 w-4" /> Add to Cart
+            <Button onClick={handleAddToCart} variant="outline" className="flex-1 gap-2" disabled={isOutOfStock}>
+              <ShoppingCart className="h-4 w-4" /> {isOutOfStock ? "Out of Stock" : "Add to Cart"}
             </Button>
-            <Button onClick={handleBuyNow} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
-              Buy Now
+            <Button onClick={handleBuyNow} className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90" disabled={isOutOfStock}>
+              {isOutOfStock ? "Unavailable" : "Buy Now"}
             </Button>
           </div>
         </div>
