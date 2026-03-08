@@ -140,6 +140,8 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      <ProductReviews productId={product.id} />
     </div>
   );
 }
