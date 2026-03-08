@@ -18,6 +18,7 @@ export default function ProductDetail() {
   const { addItem, items } = useCart();
   const [qty, setQty] = useState(1);
   const { data: product, isLoading } = useProduct(id || "");
+  const { data: ratingData } = useProductRating(id || "");
 
   const cartItem = items.find((i) => i.productId === id);
   const cartQty = cartItem?.quantity || 0;
