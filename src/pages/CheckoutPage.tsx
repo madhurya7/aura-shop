@@ -68,7 +68,10 @@ export default function CheckoutPage() {
 
       if (error) throw error;
       if (data?.url) {
-        window.location.href = data.url;
+        const newTab = window.open(data.url, "_blank");
+        if (!newTab) {
+          window.location.href = data.url;
+        }
       } else {
         throw new Error("No checkout URL returned");
       }
