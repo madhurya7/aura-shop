@@ -87,7 +87,6 @@ export default function CartPage() {
                       Max stock reached ({stock} available)
                     </p>
                   )}
-                  </div>
                 </div>
               </div>
             );
