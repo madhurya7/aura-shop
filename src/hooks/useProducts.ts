@@ -52,6 +52,20 @@ export function useProducts(search?: string, category?: string | null) {
   });
 }
 
+export function useAllProducts() {
+  return useQuery({
+    queryKey: ["all-products"],
+    queryFn: async (): Promise<Product[]> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Product[];
+    },
+  });
+}
+
 export function useProduct(id: string) {
   return useQuery({
     queryKey: ["product", id],
