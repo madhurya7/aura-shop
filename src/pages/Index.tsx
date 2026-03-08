@@ -13,6 +13,9 @@ const Index = () => {
   const [category, setCategory] = useState<string | null>(null);
   const { data: products, isLoading } = useProducts();
 
+  const productIds = useMemo(() => (products || []).map((p) => p.id), [products]);
+  const { data: ratingsMap } = useProductRatings(productIds);
+
   const filtered = useMemo(() => {
     if (!products) return [];
     return products.filter((p) => {
