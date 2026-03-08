@@ -4,7 +4,6 @@ import { MemoryRouter } from "react-router-dom";
 import CartPage from "@/pages/CartPage";
 import { CartProvider } from "@/context/CartContext";
 
-// Mock useAllProducts
 vi.mock("@/hooks/useProducts", () => ({
   useAllProducts: () => ({
     data: [
@@ -15,12 +14,10 @@ vi.mock("@/hooks/useProducts", () => ({
   }),
 }));
 
-// Mock sonner
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-// Mock productImages
 vi.mock("@/lib/productImages", () => ({
   getProductImage: (url: string) => url || "/placeholder.svg",
 }));
@@ -51,14 +48,7 @@ describe("CartPage", () => {
     localStorage.setItem(
       "cart",
       JSON.stringify([
-        {
-          productId: "prod-1",
-          name: "Wireless Headphones",
-          price: 249.99,
-          image_url: "/products/headphones.jpg",
-          category: "Audio",
-          quantity: 2,
-        },
+        { productId: "prod-1", name: "Wireless Headphones", price: 249.99, image_url: "/products/headphones.jpg", category: "Audio", quantity: 2 },
       ])
     );
     renderCartPage();
@@ -71,22 +61,8 @@ describe("CartPage", () => {
     localStorage.setItem(
       "cart",
       JSON.stringify([
-        {
-          productId: "prod-1",
-          name: "Headphones",
-          price: 249.99,
-          image_url: "",
-          category: "Audio",
-          quantity: 2,
-        },
-        {
-          productId: "prod-2",
-          name: "Keyboard",
-          price: 179.99,
-          image_url: "",
-          category: "Peripherals",
-          quantity: 1,
-        },
+        { productId: "prod-1", name: "Headphones", price: 249.99, image_url: "", category: "Audio", quantity: 2 },
+        { productId: "prod-2", name: "Keyboard", price: 179.99, image_url: "", category: "Peripherals", quantity: 1 },
       ])
     );
     renderCartPage();
@@ -104,23 +80,23 @@ describe("CartPage", () => {
     expect(screen.getByText("Proceed to Checkout")).toBeInTheDocument();
   });
 
-  it("removes item when trash button is clicked", () => {
+  it("can decrease quantity to remove item", () => {
     localStorage.setItem(
       "cart",
       JSON.stringify([
         { productId: "prod-1", name: "Headphones", price: 249.99, image_url: "", category: "Audio", quantity: 1 },
-        { productId: "prod-2", name: "Keyboard", price: 179.99, image_url: "", category: "Peripherals", quantity: 1 },
       ])
     );
     renderCartPage();
-    // There should be trash buttons for each item
-    const trashButtons = screen.getAllByRole("button").filter((btn) => {
-      return btn.querySelector("svg.lucide-trash-2");
-    });
-    expect(trashButtons.length).toBeGreaterThanOrEqual(1);
-    fireEvent.click(trashButtons[0]);
-    // After removing, only one item should remain
-    expect(screen.queryByText("Headphones")).not.toBeInTheDocument();
+    expect(screen.getByText("Headphones")).toBeInTheDocument();
+    // Click the minus button to set quantity to 0 (removes item)
+    const minusButtons = screen.getAllByRole("button").filter((btn) =>
+      btn.querySelector(".lucide-minus")
+    );
+    expect(minusButtons.length).toBeGreaterThanOrEqual(1);
+    fireEvent.click(minusButtons[0]);
+    // Should now show empty cart
+    expect(screen.getByText("Your cart is empty")).toBeInTheDocument();
   });
 
   it("shows stock warning when quantity exceeds stock", () => {

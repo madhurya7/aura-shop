@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -8,7 +9,6 @@ vi.mock("react-router-dom", async () => {
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
-// We need to control the mock per test
 let mockUser: any = null;
 let mockAuthLoading = false;
 vi.mock("@/context/AuthContext", () => ({
@@ -43,14 +43,18 @@ vi.mock("@/hooks/useReviews", () => ({
   useUserReviewForProduct: () => ({ data: null, isLoading: false }),
 }));
 
-// Import AFTER mocks
 import OrdersPage from "@/pages/OrdersPage";
 
 function renderOrders() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <MemoryRouter>
-      <OrdersPage />
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <OrdersPage />
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 

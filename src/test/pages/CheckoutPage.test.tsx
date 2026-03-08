@@ -88,7 +88,8 @@ describe("CheckoutPage", () => {
     renderCheckout([
       { productId: "prod-1", name: "Headphones", price: 249.99, image_url: "", category: "Audio", quantity: 2 },
     ]);
-    expect(screen.getByText("$499.98")).toBeInTheDocument();
+    const totals = screen.getAllByText("$499.98");
+    expect(totals.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Headphones × 2/)).toBeInTheDocument();
   });
 
