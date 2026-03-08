@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, User, LogOut, Shield, Package } from "lucide-react";
+import { ShoppingCart, Search, User, LogOut, Shield, Package, Heart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
@@ -49,6 +49,14 @@ export default function Header() {
             <Search className="h-5 w-5" />
           </Button>
 
+          {user && (
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/favorites" className="relative">
+                <Heart className="h-5 w-5" />
+              </Link>
+            </Button>
+          )}
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -67,6 +75,9 @@ export default function Header() {
                 )}
                 <DropdownMenuItem onClick={() => navigate("/orders")}>
                   <Package className="h-4 w-4 mr-2" /> Order History
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/favorites")}>
+                  <Heart className="h-4 w-4 mr-2" /> Favorites
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { signOut(); navigate("/"); }}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign out
