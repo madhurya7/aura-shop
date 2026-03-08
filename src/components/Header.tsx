@@ -65,6 +65,9 @@ export default function Header() {
                     <Shield className="h-4 w-4 mr-2" /> Admin Dashboard
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem onClick={() => navigate("/orders")}>
+                  <Package className="h-4 w-4 mr-2" /> Order History
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { signOut(); navigate("/"); }}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign out
                 </DropdownMenuItem>
