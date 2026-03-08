@@ -3,5 +3,8 @@ project_id = "kondaoiqprutjlvyxwww"
 [functions.create-checkout]
 verify_jwt = false
 
+[functions.retry-payment]
+verify_jwt = false
+
 [functions.stripe-webhook]
 verify_jwt = false

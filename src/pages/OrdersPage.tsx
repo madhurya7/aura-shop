@@ -264,63 +264,7 @@ export default function OrdersPage() {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <div key={order.id} className="border rounded-xl p-5 bg-card">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <div>
-                  <p className="text-xs text-muted-foreground font-mono">
-                    Order #{order.id.slice(0, 8)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(order.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={
-                      statusColors[order.order_status] || "bg-secondary"
-                    }
-                    variant="secondary"
-                  >
-                    {order.order_status.charAt(0).toUpperCase() +
-                      order.order_status.slice(1)}
-                  </Badge>
-                  <span className="font-heading font-bold">
-                    ${Number(order.total_price).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {order.order_items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 py-2 border-t first:border-t-0"
-                  >
-                    <img
-                      src={getProductImage(item.product?.image_url || "")}
-                      alt={item.product?.name || "Product"}
-                      className="h-14 w-14 rounded-lg object-cover bg-secondary"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {item.product?.name || "Unknown Product"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Qty: {item.quantity} × $
-                        {Number(item.price_at_purchase).toFixed(2)}
-                      </p>
-                    </div>
-                    {order.order_status === "delivered" && (
-                      <ReviewButton
-                        item={item}
-                        order={order}
-                        userId={user.id}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <OrderCard key={order.id} order={order} userId={user.id} />
           ))}
         </div>
       )}
