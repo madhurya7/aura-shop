@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useProduct } from "@/hooks/useProducts";
+import { useProductRating } from "@/hooks/useReviews";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Minus, Plus, ArrowLeft } from "lucide-react";
@@ -8,6 +9,8 @@ import { toast } from "sonner";
 import { getProductImage } from "@/lib/productImages";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import StarRating from "@/components/StarRating";
+import ProductReviews from "@/components/ProductReviews";
 
 export default function ProductDetail() {
   const { id } = useParams();
