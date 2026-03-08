@@ -1,41 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { useUserOrders, type Order, type OrderItem } from "@/hooks/useOrders";
-import { useSubmitReview, useUserReviewForProduct } from "@/hooks/useReviews";
+import { useUserOrders } from "@/hooks/useOrders";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import StarRating from "@/components/StarRating";
-import { getProductImage } from "@/lib/productImages";
+import OrderCard from "@/components/OrderCard";
 import {
   ArrowLeft,
   Package,
   Loader2,
-  Star,
   MessageSquare,
   Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-
-const statusColors: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  paid: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  shipped: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-  delivered: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-};
 
 function ReviewButton({
   item,
