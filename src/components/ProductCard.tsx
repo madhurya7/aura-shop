@@ -12,6 +12,7 @@ import type { ProductRating } from "@/hooks/useReviews";
 interface ProductCardProps {
   product: Product;
   index?: number;
+  rating?: ProductRating;
 }
 
 export default function ProductCard({ product, index = 0 }: ProductCardProps) {
