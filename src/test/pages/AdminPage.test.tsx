@@ -22,24 +22,17 @@ vi.mock("@/hooks/useProducts", () => ({
   useAllProducts: () => ({ data: mockProducts, isLoading: mockProductsLoading }),
 }));
 
-const mockUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) });
-const mockInsert = vi.fn().mockResolvedValue({ error: null });
-const mockDelete = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) });
-const mockFrom = vi.fn().mockReturnValue({
-  update: mockUpdate,
-  insert: mockInsert,
-  delete: mockDelete,
-});
-const mockUpload = vi.fn().mockResolvedValue({ error: null });
-const mockGetPublicUrl = vi.fn().mockReturnValue({ data: { publicUrl: "https://example.com/img.jpg" } });
-
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: (...args: any[]) => mockFrom(...args),
+    from: vi.fn().mockReturnValue({
+      update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+      insert: vi.fn().mockResolvedValue({ error: null }),
+      delete: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+    }),
     storage: {
       from: vi.fn().mockReturnValue({
-        upload: mockUpload,
-        getPublicUrl: mockGetPublicUrl,
+        upload: vi.fn().mockResolvedValue({ error: null }),
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://example.com/img.jpg" } }),
       }),
     },
   },
