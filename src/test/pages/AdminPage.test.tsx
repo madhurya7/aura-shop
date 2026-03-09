@@ -109,10 +109,6 @@ describe("AdminPage", () => {
     ];
     mockProductsLoading = false;
     mockToast.mockClear();
-    mockFrom.mockClear();
-    mockUpdate.mockClear();
-    mockInsert.mockClear();
-    mockDelete.mockClear();
   });
 
   // --- Authentication & Authorization ---
