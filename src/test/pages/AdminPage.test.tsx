@@ -129,12 +129,11 @@ describe("AdminPage", () => {
     expect(screen.getByText("Actions")).toBeInTheDocument();
   });
 
-  it("orders tab button exists and is clickable", () => {
+  it("renders both Products and Orders tabs", () => {
     renderPage();
-    const ordersTab = screen.getByRole("tab", { name: "Orders" });
-    expect(ordersTab).toBeInTheDocument();
-    fireEvent.click(ordersTab);
-    // Radix Tabs lazy-mounts content; verify tab is now active
-    expect(ordersTab).toHaveAttribute("data-state", "active");
+    expect(screen.getByRole("tab", { name: "Products" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Orders" })).toBeInTheDocument();
+    // Products tab is active by default
+    expect(screen.getByRole("tab", { name: "Products" })).toHaveAttribute("data-state", "active");
   });
 });
