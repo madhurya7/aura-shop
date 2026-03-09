@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useProduct } from "@/hooks/useProducts";
 import { useProductRating } from "@/hooks/useReviews";
 import { useCart } from "@/context/CartContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Minus, Plus, ArrowLeft } from "lucide-react";
 import { useState } from "react";
