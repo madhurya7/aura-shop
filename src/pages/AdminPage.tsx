@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useAllProducts, type Product } from "@/hooks/useProducts";
@@ -32,10 +32,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Pencil, Trash2, Upload, Loader2, ShieldAlert } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, Loader2, ShieldAlert, GripVertical } from "lucide-react";
 import AdminOrders from "@/components/AdminOrders";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis } from "@dnd-kit/core";
 
 interface ProductForm {
   name: string;
@@ -55,6 +73,72 @@ const emptyForm: ProductForm = {
   image_url: "",
 };
 
+function SortableRow({
+  product,
+  onEdit,
+  onDelete,
+}: {
+  product: Product;
+  onEdit: (p: Product) => void;
+  onDelete: (p: Product) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: product.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+    position: "relative" as const,
+  };
+
+  return (
+    <TableRow ref={setNodeRef} style={style}>
+      <TableCell className="w-10">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted touch-none"
+          aria-label="Drag to reorder"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </TableCell>
+      <TableCell className="w-10 text-center text-muted-foreground text-xs">
+        {product.display_order}
+      </TableCell>
+      <TableCell>
+        <img
+          src={product.image_url || "/placeholder.svg"}
+          alt={product.name}
+          className="h-10 w-10 rounded object-cover bg-secondary"
+        />
+      </TableCell>
+      <TableCell className="font-medium">{product.name}</TableCell>
+      <TableCell className="text-muted-foreground">{product.category}</TableCell>
+      <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
+      <TableCell className="text-right">{product.stock_quantity}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-1">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(product)}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => onDelete(product)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export default function AdminPage() {
   const { isAdmin, loading: adminLoading, user } = useAdminCheck();
   const { data: products, isLoading } = useAllProducts();
@@ -68,6 +152,12 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [reordering, setReordering] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   if (adminLoading) {
     return (
@@ -148,7 +238,7 @@ export default function AdminPage() {
     }
 
     setSaving(true);
-    const payload = {
+    const payload: Record<string, unknown> = {
       name: form.name,
       description: form.description,
       price: parseFloat(form.price),
@@ -161,6 +251,9 @@ export default function AdminPage() {
     if (editing) {
       ({ error } = await supabase.from("products").update(payload).eq("id", editing.id));
     } else {
+      // New products get the next display_order (end of list)
+      const maxOrder = products?.reduce((max, p) => Math.max(max, p.display_order), 0) || 0;
+      payload.display_order = maxOrder + 1;
       ({ error } = await supabase.from("products").insert(payload));
     }
 
@@ -188,6 +281,42 @@ export default function AdminPage() {
     setDeleteTarget(null);
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !products) return;
+
+    const oldIndex = products.findIndex((p) => p.id === active.id);
+    const newIndex = products.findIndex((p) => p.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove([...products], oldIndex, newIndex);
+
+    // Optimistically update cache
+    queryClient.setQueryData(["all-products"], reordered.map((p, i) => ({ ...p, display_order: i + 1 })));
+
+    setReordering(true);
+    try {
+      // Batch update all display_order values
+      const updates = reordered.map((p, i) =>
+        supabase.from("products").update({ display_order: i + 1 }).eq("id", p.id)
+      );
+      const results = await Promise.all(updates);
+      const failed = results.find((r) => r.error);
+      if (failed?.error) {
+        throw new Error(failed.error.message);
+      }
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast({ title: "Order updated" });
+    } catch (err: any) {
+      toast({ title: "Failed to save order", description: err.message, variant: "destructive" });
+      queryClient.invalidateQueries({ queryKey: ["all-products"] });
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const sortedProducts = products ? [...products].sort((a, b) => a.display_order - b.display_order) : [];
+
   return (
     <div className="container py-8 max-w-5xl">
       <div className="mb-8">
@@ -202,7 +331,16 @@ export default function AdminPage() {
         </TabsList>
 
         <TabsContent value="products">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-xs text-muted-foreground">
+              {reordering ? (
+                <span className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Saving order…
+                </span>
+              ) : (
+                "Drag rows to reorder products"
+              )}
+            </p>
             <Button onClick={openAdd}>
               <Plus className="h-4 w-4 mr-2" /> Add Product
             </Button>
@@ -214,52 +352,46 @@ export default function AdminPage() {
             </div>
           ) : (
             <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">Image</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="text-right">Stock</TableHead>
-                    <TableHead className="w-24 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products?.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell>
-                        <img
-                          src={product.image_url || "/placeholder.svg"}
-                          alt={product.name}
-                          className="h-10 w-10 rounded object-cover bg-secondary"
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{product.category}</TableCell>
-                      <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">{product.stock_quantity}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(product)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {products?.length === 0 && (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                modifiers={[restrictToVerticalAxis]}
+              >
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                        No products yet. Add your first product!
-                      </TableCell>
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead className="w-10 text-center">Order</TableHead>
+                      <TableHead className="w-16">Image</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Price</TableHead>
+                      <TableHead className="text-right">Stock</TableHead>
+                      <TableHead className="w-24 text-right">Actions</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <SortableContext items={sortedProducts.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                    <TableBody>
+                      {sortedProducts.map((product) => (
+                        <SortableRow
+                          key={product.id}
+                          product={product}
+                          onEdit={openEdit}
+                          onDelete={setDeleteTarget}
+                        />
+                      ))}
+                      {sortedProducts.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                            No products yet. Add your first product!
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </SortableContext>
+                </Table>
+              </DndContext>
             </div>
           )}
         </TabsContent>
