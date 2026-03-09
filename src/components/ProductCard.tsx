@@ -95,7 +95,7 @@ export default function ProductCard({ product, index = 0, rating }: ProductCardP
           )}
           <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
           <div className="flex items-center justify-between pt-2">
-            <span className="font-heading text-lg font-bold">${Number(product.price).toFixed(2)}</span>
+            <span className="font-heading text-lg font-bold">{formatPrice(product.price)}</span>
             <Button
               size="sm"
               variant="outline"
