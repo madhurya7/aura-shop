@@ -59,22 +59,24 @@ export default function CheckoutPage() {
     setCountryCode(form.country);
   }, [form.country, setCountryCode]);
 
-  // Free delivery check
-  const isFreeDelivery = useMemo(() => {
+  // Free delivery check (standard only)
+  const isFreeStandard = useMemo(() => {
     if (!zone || !zone.free_delivery_above || zone.free_delivery_above <= 0) return false;
     return totalPrice >= zone.free_delivery_above;
   }, [zone, totalPrice]);
 
   // Shipping cost calculation
   const shippingCostLocal = useMemo(() => {
-    if (isFreeDelivery || !zone) return 0;
+    if (!zone) return 0;
+    if (shippingMethod === "standard" && isFreeStandard) return 0;
     return shippingMethod === "express" ? zone.express_rate : zone.standard_rate;
-  }, [zone, shippingMethod, isFreeDelivery]);
+  }, [zone, shippingMethod, isFreeStandard]);
 
   const shippingCostUsd = useMemo(() => {
-    if (isFreeDelivery || !zone) return 0;
+    if (!zone) return 0;
+    if (shippingMethod === "standard" && isFreeStandard) return 0;
     return shippingCostLocal / (zone.exchange_rate || 1);
-  }, [shippingCostLocal, zone, isFreeDelivery]);
+  }, [shippingCostLocal, zone, isFreeStandard, shippingMethod]);
 
   const deliveryTime = useMemo(() => {
     if (!zone) return "";
