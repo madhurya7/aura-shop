@@ -33,7 +33,7 @@ import { toast } from "sonner";
 
 const baseProduct = {
   id: "p1", name: "Handloom Scarf", description: "Beautiful scarf", price: 29.99,
-  category: "Handloom", stock_quantity: 10, image_url: "", created_at: "", updated_at: "",
+  category: "Handloom", stock_quantity: 10, image_url: "", created_at: "", updated_at: "", display_order: 1,
 };
 
 const renderCard = (product = baseProduct, rating?: any) =>

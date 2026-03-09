@@ -9,8 +9,8 @@ let mockAdminLoading = false;
 let mockUser: { id: string; email: string } | null = { id: "admin-1", email: "admin@test.com" };
 
 let mockProducts = [
-  { id: "p1", name: "Headphones", description: "Great sound", price: 99.99, category: "Electronics", stock_quantity: 20, image_url: "", created_at: "", updated_at: "" },
-  { id: "p2", name: "Ceramic Bowl", description: "Handmade", price: 29.99, category: "Pottery", stock_quantity: 15, image_url: "", created_at: "", updated_at: "" },
+  { id: "p1", name: "Headphones", description: "Great sound", price: 99.99, category: "Electronics", stock_quantity: 20, image_url: "", created_at: "", updated_at: "", display_order: 1 },
+  { id: "p2", name: "Ceramic Bowl", description: "Handmade", price: 29.99, category: "Pottery", stock_quantity: 15, image_url: "", created_at: "", updated_at: "", display_order: 2 },
 ];
 let mockProductsLoading = false;
 
@@ -66,8 +66,8 @@ describe("AdminPage", () => {
     mockAdminLoading = false;
     mockUser = { id: "admin-1", email: "admin@test.com" };
     mockProducts = [
-      { id: "p1", name: "Headphones", description: "Great sound", price: 99.99, category: "Electronics", stock_quantity: 20, image_url: "", created_at: "", updated_at: "" },
-      { id: "p2", name: "Ceramic Bowl", description: "Handmade", price: 29.99, category: "Pottery", stock_quantity: 15, image_url: "", created_at: "", updated_at: "" },
+      { id: "p1", name: "Headphones", description: "Great sound", price: 99.99, category: "Electronics", stock_quantity: 20, image_url: "", created_at: "", updated_at: "", display_order: 1 },
+      { id: "p2", name: "Ceramic Bowl", description: "Handmade", price: 29.99, category: "Pottery", stock_quantity: 15, image_url: "", created_at: "", updated_at: "", display_order: 2 },
     ];
     mockProductsLoading = false;
     mockToast.mockClear();

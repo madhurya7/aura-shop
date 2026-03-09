@@ -9,6 +9,7 @@ export interface Product {
   image_url: string;
   stock_quantity: number;
   category: string;
+  display_order: number;
   created_at: string;
 }
 
@@ -27,7 +28,7 @@ export function useProducts(search?: string, category?: string | null) {
       let query = supabase
         .from("products")
         .select("*")
-        .order("created_at", { ascending: false })
+        .order("display_order", { ascending: true })
         .range(from, to);
 
       if (search) {
@@ -59,7 +60,7 @@ export function useAllProducts() {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("display_order", { ascending: true });
       if (error) throw error;
       return data as Product[];
     },
