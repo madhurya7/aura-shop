@@ -254,6 +254,7 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          display_order: number
           id: string
           image_url: string
           name: string
@@ -265,6 +266,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          display_order?: number
           id?: string
           image_url?: string
           name: string
@@ -276,6 +278,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          display_order?: number
           id?: string
           image_url?: string
           name?: string
