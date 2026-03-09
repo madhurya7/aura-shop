@@ -86,7 +86,7 @@ describe("ShippingZone free_delivery_above", () => {
     const zone = makeZone({ free_delivery_above: 200, express_rate: 15 });
     const totalPrice = 500;
     const isFreeStandard = zone.free_delivery_above > 0 && totalPrice >= zone.free_delivery_above;
-    const shippingMethod = "express";
+    const shippingMethod: "standard" | "express" = "express";
     const shippingCost = shippingMethod === "standard" && isFreeStandard ? 0 : zone.express_rate;
     expect(shippingCost).toBe(15);
   });
