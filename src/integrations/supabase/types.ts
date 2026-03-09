@@ -288,6 +288,51 @@ export type Database = {
         }
         Relationships: []
       }
+      shipping_zones: {
+        Row: {
+          countries: Json
+          created_at: string
+          currency_code: string
+          currency_symbol: string
+          exchange_rate: number
+          express_days: string
+          express_rate: number
+          id: string
+          name: string
+          standard_days: string
+          standard_rate: number
+          updated_at: string
+        }
+        Insert: {
+          countries?: Json
+          created_at?: string
+          currency_code?: string
+          currency_symbol?: string
+          exchange_rate?: number
+          express_days?: string
+          express_rate?: number
+          id?: string
+          name: string
+          standard_days?: string
+          standard_rate?: number
+          updated_at?: string
+        }
+        Update: {
+          countries?: Json
+          created_at?: string
+          currency_code?: string
+          currency_symbol?: string
+          exchange_rate?: number
+          express_days?: string
+          express_rate?: number
+          id?: string
+          name?: string
+          standard_days?: string
+          standard_rate?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
