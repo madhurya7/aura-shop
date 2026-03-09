@@ -238,7 +238,7 @@ export default function AdminPage() {
     }
 
     setSaving(true);
-    const payload: Record<string, unknown> = {
+    const payload = {
       name: form.name,
       description: form.description,
       price: parseFloat(form.price),
@@ -251,9 +251,8 @@ export default function AdminPage() {
     if (editing) {
       ({ error } = await supabase.from("products").update(payload).eq("id", editing.id));
     } else {
-      // New products get the next display_order (end of list)
       const maxOrder = products?.reduce((max, p) => Math.max(max, p.display_order), 0) || 0;
-      ({ error } = await supabase.from("products").insert({ ...payload, display_order: maxOrder + 1 } as any));
+      ({ error } = await supabase.from("products").insert({ ...payload, display_order: maxOrder + 1 }));
     }
 
     if (error) {
