@@ -283,11 +283,12 @@ export default function AdminPage() {
     const { active, over } = event;
     if (!over || active.id === over.id || !products) return;
 
-    const oldIndex = products.findIndex((p) => p.id === active.id);
-    const newIndex = products.findIndex((p) => p.id === over.id);
+    const sorted = [...products].sort((a, b) => a.display_order - b.display_order);
+    const oldIndex = sorted.findIndex((p) => p.id === active.id);
+    const newIndex = sorted.findIndex((p) => p.id === over.id);
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove([...products], oldIndex, newIndex);
+    const reordered = arrayMove(sorted, oldIndex, newIndex);
 
     // Optimistically update cache
     queryClient.setQueryData(["all-products"], reordered.map((p, i) => ({ ...p, display_order: i + 1 })));
