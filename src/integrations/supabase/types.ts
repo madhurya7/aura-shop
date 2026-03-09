@@ -297,6 +297,7 @@ export type Database = {
           exchange_rate: number
           express_days: string
           express_rate: number
+          free_delivery_above: number
           id: string
           name: string
           standard_days: string
@@ -311,6 +312,7 @@ export type Database = {
           exchange_rate?: number
           express_days?: string
           express_rate?: number
+          free_delivery_above?: number
           id?: string
           name: string
           standard_days?: string
@@ -325,6 +327,7 @@ export type Database = {
           exchange_rate?: number
           express_days?: string
           express_rate?: number
+          free_delivery_above?: number
           id?: string
           name?: string
           standard_days?: string

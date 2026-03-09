@@ -1,0 +1,1 @@
+ALTER TABLE public.shipping_zones ADD COLUMN free_delivery_above numeric NOT NULL DEFAULT 200;
