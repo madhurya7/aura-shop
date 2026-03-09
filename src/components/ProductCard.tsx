@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useFavorites, useToggleFavorite } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart } from "lucide-react";
