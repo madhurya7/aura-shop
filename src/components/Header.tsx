@@ -22,6 +22,7 @@ export default function Header() {
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
+  const { countryCode, setCountryCode, currencySymbol, currencyCode: cc } = useCurrency();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
