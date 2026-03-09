@@ -243,7 +243,7 @@ describe("AdminPage", () => {
     expect(screen.getByText("Name *")).toBeInTheDocument();
     expect(screen.getByText("Description")).toBeInTheDocument();
     expect(screen.getByText("Price *")).toBeInTheDocument();
-    expect(screen.getByText("Stock")).toBeInTheDocument();
+    expect(screen.getAllByText("Stock").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("Category")).toBeInTheDocument();
     expect(screen.getByText("Product Image")).toBeInTheDocument();
   });
