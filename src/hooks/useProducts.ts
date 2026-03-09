@@ -9,6 +9,7 @@ export interface Product {
   image_url: string;
   stock_quantity: number;
   category: string;
+  display_order: number;
   created_at: string;
 }
 
