@@ -102,6 +102,9 @@ serve(async (req) => {
       metadata: {
         user_id: user?.id || "",
         shipping_address: JSON.stringify(shippingAddress),
+        shipping_method: resolvedShippingMethod,
+        shipping_cost: String(resolvedShippingCost),
+        shipping_zone: shippingZone || "",
         items: JSON.stringify(items.map((i: any) => ({ productId: i.productId, quantity: i.quantity, price: i.price }))),
       },
     };
