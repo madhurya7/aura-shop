@@ -102,7 +102,7 @@ export default function CartPage() {
               {items.map((item) => (
                 <div key={item.productId} className="flex justify-between">
                   <span className="text-muted-foreground truncate mr-2">{item.name} × {item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  <span>{formatPrice(item.price * item.quantity)}</span>
                 </div>
               ))}
             </div>
