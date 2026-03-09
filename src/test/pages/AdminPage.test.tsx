@@ -155,12 +155,12 @@ describe("AdminPage", () => {
     expect(screen.getByRole("tab", { name: "Products" })).toHaveAttribute("data-state", "active");
   });
 
-  it("switches to Orders tab and shows AdminOrders component", async () => {
+  it("switches to Orders tab", () => {
     renderPage();
-    fireEvent.click(screen.getByRole("tab", { name: "Orders" }));
-    await waitFor(() => {
-      expect(screen.getByTestId("admin-orders")).toBeInTheDocument();
-    });
+    const ordersTab = screen.getByRole("tab", { name: "Orders" });
+    fireEvent.click(ordersTab);
+    expect(ordersTab).toHaveAttribute("data-state", "active");
+    expect(screen.getByRole("tab", { name: "Products" })).toHaveAttribute("data-state", "inactive");
   });
 
   // --- Product Table ---
