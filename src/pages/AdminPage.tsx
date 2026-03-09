@@ -34,6 +34,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Pencil, Trash2, Upload, Loader2, ShieldAlert, GripVertical } from "lucide-react";
 import AdminOrders from "@/components/AdminOrders";
+import AdminShippingZones from "@/components/AdminShippingZones";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
