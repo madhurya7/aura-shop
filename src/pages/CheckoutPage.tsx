@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useAddresses, type Address } from "@/hooks/useAddresses";
 import { useAddressMutations } from "@/hooks/useAddresses";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,14 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, ShoppingBag, Plus, MapPin, Star, Loader2 } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Plus, MapPin, Star, Loader2, Truck } from "lucide-react";
+import { countries } from "@/lib/countries";
 
 const emptyAddress = {
   name: "",
@@ -31,8 +32,10 @@ const emptyAddress = {
 export default function CheckoutPage() {
   const { user } = useAuth();
   const { items, totalPrice } = useCart();
+  const { zone, formatPrice, convertPrice, currencySymbol, currencyCode } = useCurrency();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
 
   const { data: addresses, isLoading: addressesLoading } = useAddresses();
   const { addAddress } = useAddressMutations();
@@ -50,6 +53,30 @@ export default function CheckoutPage() {
     postal_code: "",
     country: "US",
   });
+
+  // Sync country to currency context
+  const { setCountryCode } = useCurrency();
+  useEffect(() => {
+    setCountryCode(form.country);
+  }, [form.country, setCountryCode]);
+
+  // Shipping cost calculation
+  const shippingCostLocal = useMemo(() => {
+    if (!zone) return 0;
+    return shippingMethod === "express" ? zone.express_rate : zone.standard_rate;
+  }, [zone, shippingMethod]);
+
+  const shippingCostUsd = useMemo(() => {
+    if (!zone) return 0;
+    return shippingCostLocal / (zone.exchange_rate || 1);
+  }, [shippingCostLocal, zone]);
+
+  const deliveryTime = useMemo(() => {
+    if (!zone) return "";
+    return shippingMethod === "express" ? zone.express_days : zone.standard_days;
+  }, [zone, shippingMethod]);
+
+  const totalWithShipping = totalPrice + shippingCostUsd;
 
   // Auto-select default address when addresses load
   useEffect(() => {
@@ -82,7 +109,6 @@ export default function CheckoutPage() {
       toast.error("Please fill in all required fields");
       return;
     }
-
     try {
       await addAddress.mutateAsync(newAddress);
       toast.success("Address saved");
@@ -95,7 +121,7 @@ export default function CheckoutPage() {
 
   const update = (field: string, value: string) => {
     setForm((p) => ({ ...p, [field]: value }));
-    setSelectedAddressId(null); // User is manually editing
+    setSelectedAddressId(null);
   };
 
   if (items.length === 0) {
@@ -113,7 +139,6 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: {
@@ -133,15 +158,15 @@ export default function CheckoutPage() {
             postal_code: form.postal_code,
             country: form.country,
           },
+          shippingMethod,
+          shippingCost: shippingCostUsd,
+          shippingZone: zone?.name || "Unknown",
         },
       });
-
       if (error) throw error;
       if (data?.url) {
         const newTab = window.open(data.url, "_blank");
-        if (!newTab) {
-          window.location.href = data.url;
-        }
+        if (!newTab) window.location.href = data.url;
       } else {
         throw new Error("No checkout URL returned");
       }
@@ -163,73 +188,46 @@ export default function CheckoutPage() {
       {!user && (
         <div className="rounded-xl border bg-secondary/50 p-4 mb-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Have an account? Sign in for a faster checkout.</p>
-          <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
-            Sign In
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>Sign In</Button>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Contact */}
         <section className="space-y-4">
           <h2 className="font-heading text-lg font-semibold">Contact</h2>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              required
-              placeholder="you@example.com"
-            />
+            <Input id="email" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required placeholder="you@example.com" />
           </div>
         </section>
 
+        {/* Shipping Address */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold">Shipping Address</h2>
             {user && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAddDialog(true)}
-                disabled={addresses && addresses.length >= 5}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowAddDialog(true)} disabled={addresses && addresses.length >= 5}>
                 <Plus className="h-4 w-4 mr-1" />
                 {addresses && addresses.length >= 5 ? "Max 5 reached" : "Save New"}
               </Button>
             )}
           </div>
 
-          {/* Saved addresses selector */}
+          {/* Saved addresses */}
           {user && !addressesLoading && addresses && addresses.length > 0 && (
             <div className="grid gap-2">
               {addresses.map((addr) => (
-                <button
-                  key={addr.id}
-                  type="button"
-                  onClick={() => handleSelectAddress(addr)}
-                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                    selectedAddressId === addr.id
-                      ? "border-accent bg-accent/5 ring-1 ring-accent"
-                      : "border-border hover:border-muted-foreground/30"
-                  }`}
-                >
+                <button key={addr.id} type="button" onClick={() => handleSelectAddress(addr)}
+                  className={`w-full text-left rounded-lg border p-3 transition-colors ${selectedAddressId === addr.id ? "border-accent bg-accent/5 ring-1 ring-accent" : "border-border hover:border-muted-foreground/30"}`}>
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{addr.name}</span>
-                        {addr.is_default && (
-                          <span className="inline-flex items-center gap-1 text-xs text-accent">
-                            <Star className="h-3 w-3 fill-current" /> Default
-                          </span>
-                        )}
+                        {addr.is_default && <span className="inline-flex items-center gap-1 text-xs text-accent"><Star className="h-3 w-3 fill-current" /> Default</span>}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {addr.address_line1}, {addr.city}, {addr.state} {addr.postal_code}
-                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{addr.address_line1}, {addr.city}, {addr.state} {addr.postal_code}</p>
                     </div>
                   </div>
                 </button>
@@ -269,38 +267,97 @@ export default function CheckoutPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="country">Country</Label>
-              <Input id="country" value={form.country} onChange={(e) => update("country", e.target.value)} required />
+              <Select value={form.country} onValueChange={(val) => { setForm((p) => ({ ...p, country: val })); setSelectedAddressId(null); }}>
+                <SelectTrigger id="country">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </section>
 
-        <section className="rounded-xl border bg-card p-6">
-          <h2 className="font-heading text-lg font-semibold mb-4">Order Summary</h2>
-          <div className="space-y-2 text-sm">
-            {items.map((item) => (
-              <div key={item.productId} className="flex justify-between">
-                <span className="text-muted-foreground truncate mr-2">
-                  {item.name} × {item.quantity}
+        {/* Shipping Method */}
+        <section className="space-y-4">
+          <h2 className="font-heading text-lg font-semibold flex items-center gap-2">
+            <Truck className="h-5 w-5" /> Shipping Method
+          </h2>
+          {zone && (
+            <p className="text-xs text-muted-foreground">
+              Shipping zone: <span className="font-medium text-foreground">{zone.name}</span>
+            </p>
+          )}
+          <div className="grid gap-2">
+            <button type="button" onClick={() => setShippingMethod("standard")}
+              className={`w-full text-left rounded-lg border p-4 transition-colors ${shippingMethod === "standard" ? "border-accent bg-accent/5 ring-1 ring-accent" : "border-border hover:border-muted-foreground/30"}`}>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-sm">Standard Shipping</p>
+                  <p className="text-xs text-muted-foreground">{zone?.standard_days || "7-14 days"}</p>
+                </div>
+                <span className="font-heading font-bold">
+                  {zone ? `${zone.currency_symbol}${zone.standard_rate.toFixed(2)}` : "—"}
                 </span>
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
               </div>
-            ))}
-          </div>
-          <div className="border-t mt-4 pt-4 flex justify-between font-heading font-bold text-lg">
-            <span>Total</span>
-            <span>${totalPrice.toFixed(2)}</span>
+            </button>
+            <button type="button" onClick={() => setShippingMethod("express")}
+              className={`w-full text-left rounded-lg border p-4 transition-colors ${shippingMethod === "express" ? "border-accent bg-accent/5 ring-1 ring-accent" : "border-border hover:border-muted-foreground/30"}`}>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-sm">Express Shipping</p>
+                  <p className="text-xs text-muted-foreground">{zone?.express_days || "3-5 days"}</p>
+                </div>
+                <span className="font-heading font-bold">
+                  {zone ? `${zone.currency_symbol}${zone.express_rate.toFixed(2)}` : "—"}
+                </span>
+              </div>
+            </button>
           </div>
         </section>
 
-        <Button
-          type="submit"
-          className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-          size="lg"
-          disabled={loading}
-        >
-          {loading ? "Redirecting to payment..." : `Pay $${totalPrice.toFixed(2)}`}
+        {/* Order Summary */}
+        <section className="rounded-xl border bg-card p-6">
+          <h2 className="font-heading text-lg font-semibold mb-4">Order Summary</h2>
+          <div className="text-xs text-muted-foreground mb-3">
+            Prices shown in {currencyCode} ({currencySymbol})
+          </div>
+          <div className="space-y-2 text-sm">
+            {items.map((item) => (
+              <div key={item.productId} className="flex justify-between">
+                <span className="text-muted-foreground truncate mr-2">{item.name} × {item.quantity}</span>
+                <span>{formatPrice(item.price * item.quantity)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="border-t mt-3 pt-3 space-y-1 text-sm">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Subtotal</span>
+              <span>{formatPrice(totalPrice)}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Shipping ({shippingMethod === "express" ? "Express" : "Standard"})</span>
+              <span>{zone ? `${zone.currency_symbol}${shippingCostLocal.toFixed(2)}` : "—"}</span>
+            </div>
+          </div>
+          <div className="border-t mt-3 pt-3 flex justify-between font-heading font-bold text-lg">
+            <span>Total</span>
+            <span>{formatPrice(totalWithShipping)}</span>
+          </div>
+          {deliveryTime && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Estimated delivery: {deliveryTime}
+            </p>
+          )}
+        </section>
+
+        <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" size="lg" disabled={loading}>
+          {loading ? "Redirecting to payment..." : `Pay ${formatPrice(totalWithShipping)}`}
         </Button>
-        <p className="text-xs text-center text-muted-foreground">You'll be redirected to Stripe for secure payment</p>
+        <p className="text-xs text-center text-muted-foreground">You'll be redirected to Stripe for secure payment (charged in USD)</p>
       </form>
 
       {/* Add Address Dialog */}
@@ -311,42 +368,26 @@ export default function CheckoutPage() {
             <DialogDescription>Add a shipping address to your account (max 5).</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div>
-              <Label>Full Name *</Label>
-              <Input value={newAddress.name} onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })} />
-            </div>
-            <div>
-              <Label>Address *</Label>
-              <Input value={newAddress.address_line1} onChange={(e) => setNewAddress({ ...newAddress, address_line1: e.target.value })} />
+            <div><Label>Full Name *</Label><Input value={newAddress.name} onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })} /></div>
+            <div><Label>Address *</Label><Input value={newAddress.address_line1} onChange={(e) => setNewAddress({ ...newAddress, address_line1: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>City *</Label><Input value={newAddress.city} onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })} /></div>
+              <div><Label>State</Label><Input value={newAddress.state} onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>City *</Label>
-                <Input value={newAddress.city} onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })} />
-              </div>
-              <div>
-                <Label>State</Label>
-                <Input value={newAddress.state} onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Postal Code *</Label>
-                <Input value={newAddress.postal_code} onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })} />
-              </div>
+              <div><Label>Postal Code *</Label><Input value={newAddress.postal_code} onChange={(e) => setNewAddress({ ...newAddress, postal_code: e.target.value })} /></div>
               <div>
                 <Label>Country</Label>
-                <Input value={newAddress.country} onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })} />
+                <Select value={newAddress.country} onValueChange={(val) => setNewAddress({ ...newAddress, country: val })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {countries.map((c) => (<SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="setDefault"
-                checked={newAddress.is_default}
-                onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
-                className="rounded"
-              />
+              <input type="checkbox" id="setDefault" checked={newAddress.is_default} onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })} className="rounded" />
               <Label htmlFor="setDefault" className="text-sm cursor-pointer">Set as default address</Label>
             </div>
             <div className="flex justify-end gap-2 pt-2">
