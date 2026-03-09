@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CartProvider } from "@/context/CartContext";
 
 const mockUser = { id: "user-1", email: "test@example.com" };
 let currentUser: typeof mockUser | null = mockUser;
@@ -30,6 +31,10 @@ vi.mock("@/hooks/useReviews", () => ({
   useProductRating: () => ({ data: null }),
 }));
 
+vi.mock("@/hooks/useProducts", () => ({
+  useAllProducts: () => ({ data: mockProducts, isLoading: false }),
+}));
+
 vi.mock("@/lib/productImages", () => ({
   getProductImage: (url: string) => url || "/placeholder.svg",
 }));
@@ -41,7 +46,9 @@ const renderPage = () => {
   return render(
     <QueryClientProvider client={qc}>
       <MemoryRouter>
-        <FavoritesPage />
+        <CartProvider>
+          <FavoritesPage />
+        </CartProvider>
       </MemoryRouter>
     </QueryClientProvider>
   );
@@ -78,10 +85,9 @@ describe("FavoritesPage", () => {
     expect(screen.getByText(/no favorites yet/i)).toBeInTheDocument();
   });
 
-  it("shows loading skeletons", () => {
-    mockFavLoading = true;
-    mockFavData = undefined;
-    const { container } = renderPage();
-    expect(container.querySelectorAll('[class*="skeleton"]').length).toBeGreaterThan(0);
+  it("shows singular item text for one product", () => {
+    mockFavData = [mockProducts[0]];
+    renderPage();
+    expect(screen.getByText("1 saved item")).toBeInTheDocument();
   });
 });
