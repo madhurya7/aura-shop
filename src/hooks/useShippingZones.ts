@@ -12,6 +12,7 @@ export interface ShippingZone {
   express_rate: number;
   standard_days: string;
   express_days: string;
+  free_delivery_above: number;
   created_at: string;
   updated_at: string;
 }
