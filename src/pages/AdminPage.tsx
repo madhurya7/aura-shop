@@ -168,6 +168,7 @@ export default function AdminPage() {
       toast({ title: "Error saving product", description: error.message, variant: "destructive" });
     } else {
       toast({ title: editing ? "Product updated" : "Product created" });
+      queryClient.invalidateQueries({ queryKey: ["all-products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setDialogOpen(false);
     }
