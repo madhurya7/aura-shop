@@ -32,7 +32,10 @@ serve(async (req) => {
       user = data.user;
     }
 
-    const { items, email, shippingAddress } = await req.json();
+    const { items, email, shippingAddress, shippingMethod, shippingCost, shippingZone } = await req.json();
+
+    const resolvedShippingCost = typeof shippingCost === "number" ? shippingCost : 0;
+    const resolvedShippingMethod = shippingMethod || "standard";
 
     if (!items?.length) throw new Error("No items provided");
     if (!email) throw new Error("Email is required");
@@ -64,7 +67,7 @@ serve(async (req) => {
     }
 
     // Create checkout session with price_data for dynamic cart items
-    const lineItems = items.map((item: any) => ({
+    const lineItems: any[] = items.map((item: any) => ({
       price_data: {
         currency: "usd",
         product_data: {
@@ -74,6 +77,20 @@ serve(async (req) => {
       },
       quantity: item.quantity,
     }));
+
+    // Add shipping as a line item
+    if (resolvedShippingCost > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Shipping (${resolvedShippingMethod === "express" ? "Express" : "Standard"} - ${shippingZone || "Standard"})`,
+          },
+          unit_amount: Math.round(resolvedShippingCost * 100),
+        },
+        quantity: 1,
+      });
+    }
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
@@ -85,13 +102,16 @@ serve(async (req) => {
       metadata: {
         user_id: user?.id || "",
         shipping_address: JSON.stringify(shippingAddress),
+        shipping_method: resolvedShippingMethod,
+        shipping_cost: String(resolvedShippingCost),
+        shipping_zone: shippingZone || "",
         items: JSON.stringify(items.map((i: any) => ({ productId: i.productId, quantity: i.quantity, price: i.price }))),
       },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    const totalPrice = items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0);
+    const totalPrice = items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0) + resolvedShippingCost;
 
     const { data: order, error: orderError } = await serviceClient
       .from("orders")

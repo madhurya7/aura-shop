@@ -1,4 +1,5 @@
 import { useCart } from "@/context/CartContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useAllProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, AlertTriangle } from "lucide-react";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
+  const { formatPrice } = useCurrency();
   const { data: products } = useAllProducts();
   const navigate = useNavigate();
 
@@ -61,7 +63,7 @@ export default function CartPage() {
                     <h3 className="font-heading font-semibold truncate">{item.name}</h3>
                   </Link>
                   <p className="text-sm text-muted-foreground">{item.category}</p>
-                  <p className="font-heading font-bold mt-1">${Number(item.price).toFixed(2)}</p>
+                  <p className="font-heading font-bold mt-1">{formatPrice(item.price)}</p>
                   {overStock && (
                     <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertTriangle className="h-3 w-3" />
@@ -100,14 +102,14 @@ export default function CartPage() {
               {items.map((item) => (
                 <div key={item.productId} className="flex justify-between">
                   <span className="text-muted-foreground truncate mr-2">{item.name} × {item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  <span>{formatPrice(item.price * item.quantity)}</span>
                 </div>
               ))}
             </div>
             <div className="border-t mt-4 pt-4">
               <div className="flex justify-between font-heading font-bold text-lg">
                 <span>Total</span>
-                <span>${totalPrice.toFixed(2)}</span>
+                <span>{formatPrice(totalPrice)}</span>
               </div>
             </div>
             <Button className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90" size="lg" asChild>

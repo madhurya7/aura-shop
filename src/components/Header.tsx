@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, User, LogOut, Shield, Package, Heart } from "lucide-react";
+import { ShoppingCart, Search, User, LogOut, Shield, Package, Heart, Globe } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +12,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
+import { countries } from "@/lib/countries";
 
 export default function Header() {
   const { totalItems } = useCart();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
+  const { countryCode, setCountryCode, currencySymbol, currencyCode: cc } = useCurrency();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
@@ -45,6 +51,20 @@ export default function Header() {
         </form>
 
         <div className="flex items-center gap-2 ml-auto">
+          {/* Currency/Country selector */}
+          <Select value={countryCode} onValueChange={setCountryCode}>
+            <SelectTrigger className="w-auto gap-1 border-0 bg-transparent text-xs font-medium h-8 px-2">
+              <Globe className="h-3.5 w-3.5" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {countries.map((c) => (
+                <SelectItem key={c.code} value={c.code} className="text-xs">{c.code} - {c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground hidden sm:inline">{currencySymbol}{cc}</span>
+
           <Button variant="ghost" size="icon" className="sm:hidden" onClick={() => navigate("/?search=")}>
             <Search className="h-5 w-5" />
           </Button>

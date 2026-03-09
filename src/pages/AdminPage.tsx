@@ -34,6 +34,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Pencil, Trash2, Upload, Loader2, ShieldAlert, GripVertical } from "lucide-react";
 import AdminOrders from "@/components/AdminOrders";
+import AdminShippingZones from "@/components/AdminShippingZones";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -327,6 +328,7 @@ export default function AdminPage() {
         <TabsList className="mb-6">
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="shipping">Shipping Zones</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -397,6 +399,10 @@ export default function AdminPage() {
 
         <TabsContent value="orders">
           <AdminOrders />
+        </TabsContent>
+
+        <TabsContent value="shipping">
+          <AdminShippingZones />
         </TabsContent>
       </Tabs>
 

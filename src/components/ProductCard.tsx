@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useFavorites, useToggleFavorite } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart } from "lucide-react";
@@ -20,6 +21,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, index = 0, rating }: ProductCardProps) {
   const { addItem, items } = useCart();
   const { user } = useAuth();
+  const { formatPrice } = useCurrency();
   const { data: favoriteSet } = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const isFavorited = favoriteSet?.has(product.id) || false;
@@ -93,7 +95,7 @@ export default function ProductCard({ product, index = 0, rating }: ProductCardP
           )}
           <p className="text-sm text-muted-foreground line-clamp-1">{product.description}</p>
           <div className="flex items-center justify-between pt-2">
-            <span className="font-heading text-lg font-bold">${Number(product.price).toFixed(2)}</span>
+            <span className="font-heading text-lg font-bold">{formatPrice(product.price)}</span>
             <Button
               size="sm"
               variant="outline"
