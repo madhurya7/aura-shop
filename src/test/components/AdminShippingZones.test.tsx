@@ -87,7 +87,7 @@ describe("AdminShippingZones", () => {
   it("shows country names", () => {
     renderComponent();
     expect(screen.getByText(/United States/)).toBeInTheDocument();
-    expect(screen.getByText(/India/)).toBeInTheDocument();
+    expect(screen.getAllByText(/India/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("opens add zone dialog", () => {
