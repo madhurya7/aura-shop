@@ -366,7 +366,7 @@ describe("AdminPage", () => {
       { id: "p1", name: "No Image", description: "", price: 10, category: "Cat", stock_quantity: 1, image_url: "", created_at: "", updated_at: "", display_order: 1 },
     ];
     renderPage();
-    const img = screen.getByAlt("No Image");
+    const img = screen.getByRole("img", { name: "No Image" });
     expect(img).toHaveAttribute("src", "/placeholder.svg");
   });
 });
