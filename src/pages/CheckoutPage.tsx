@@ -359,7 +359,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>Shipping ({shippingMethod === "express" ? "Express" : "Standard"})</span>
-              <span>{isFreeDelivery ? <span className="text-green-600 font-medium">FREE</span> : zone ? `${zone.currency_symbol}${shippingCostLocal.toFixed(2)}` : "—"}</span>
+              <span>{shippingMethod === "standard" && isFreeStandard ? <span className="text-green-600 font-medium">FREE</span> : zone ? `${zone.currency_symbol}${shippingCostLocal.toFixed(2)}` : "—"}</span>
             </div>
           </div>
           <div className="border-t mt-3 pt-3 flex justify-between font-heading font-bold text-lg">
