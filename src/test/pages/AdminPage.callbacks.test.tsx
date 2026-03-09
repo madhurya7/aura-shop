@@ -182,9 +182,12 @@ describe("AdminPage callbacks", () => {
 
     await waitFor(() => screen.getByText("Delete Product"));
     
-    // Find and click the destructive action button
-    const confirmBtn = screen.getAllByRole("button").find(b => b.textContent === "Delete");
-    if (confirmBtn) fireEvent.click(confirmBtn);
+    // The AlertDialogAction has the text "Delete" and destructive styling
+    const allButtons = screen.getAllByRole("button");
+    const confirmDelete = allButtons.find(b => 
+      b.textContent === "Delete" && b.className.includes("destructive")
+    );
+    if (confirmDelete) fireEvent.click(confirmDelete);
 
     await waitFor(() => {
       expect(mockDeleteEq).toHaveBeenCalledWith("p1");
