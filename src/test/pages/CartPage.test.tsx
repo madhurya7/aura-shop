@@ -14,6 +14,18 @@ vi.mock("@/hooks/useProducts", () => ({
   }),
 }));
 
+vi.mock("@/context/CurrencyContext", () => ({
+  useCurrency: () => ({
+    zone: { name: "North America", currency_symbol: "$", currency_code: "USD", exchange_rate: 1, standard_rate: 5, express_rate: 15, standard_days: "7-14 days", express_days: "3-5 days", free_delivery_above: 200 },
+    formatPrice: (p: number) => `$${p.toFixed(2)}`,
+    convertPrice: (p: number) => p,
+    currencySymbol: "$",
+    currencyCode: "USD",
+    countryCode: "US",
+    setCountryCode: vi.fn(),
+  }),
+}));
+
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
