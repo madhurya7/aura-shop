@@ -77,28 +77,30 @@ describe("Header", () => {
     expect(screen.getByText("$USD")).toBeInTheDocument();
   });
 
-  it("shows user dropdown with name when logged in", () => {
+  it("shows user dropdown with name when logged in", async () => {
     renderHeader();
-    // Click user icon to open dropdown
-    const userButtons = screen.getAllByRole("button");
-    const userBtn = userButtons.find(b => b.querySelector(".lucide-user"));
+    const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
+    // Name may be split across elements, use a function matcher
+    const nameEl = await screen.findByText((content, el) => el?.textContent?.includes("John Doe") || false);
+    expect(nameEl).toBeInTheDocument();
   });
 
-  it("shows admin dashboard link for admin users", () => {
+  it("shows admin dashboard link for admin users", async () => {
     mockIsAdmin = true;
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    expect(screen.getByText("Admin Dashboard")).toBeInTheDocument();
+    expect(await screen.findByText("Admin Dashboard")).toBeInTheDocument();
   });
 
-  it("does not show admin link for non-admin users", () => {
+  it("does not show admin link for non-admin users", async () => {
     mockIsAdmin = false;
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
+    // Wait a tick for dropdown to render
+    await new Promise(r => setTimeout(r, 50));
     expect(screen.queryByText("Admin Dashboard")).not.toBeInTheDocument();
   });
 
