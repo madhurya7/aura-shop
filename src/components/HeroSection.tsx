@@ -11,7 +11,7 @@ export default function HeroSection() {
     <section className="relative overflow-hidden rounded-2xl mx-4 mt-4 lg:mx-0">
       <div className="absolute inset-0">
         <img src={heroBanner} alt="Artisan handcrafted goods collection" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/65 to-foreground/20" />
       </div>
       <div className="relative px-8 py-20 sm:px-12 sm:py-28 lg:py-36 max-w-xl">
         <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-foreground leading-tight">
