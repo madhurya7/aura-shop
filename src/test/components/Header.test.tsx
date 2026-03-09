@@ -148,15 +148,23 @@ describe("Header", () => {
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    expect(await screen.findByText("test@test.com")).toBeInTheDocument();
+    await waitFor(() => {
+      const menuItems = document.querySelectorAll('[role="menuitem"]');
+      const emailItem = Array.from(menuItems).find(el => el.textContent?.includes("test@test.com"));
+      expect(emailItem).toBeTruthy();
+    });
   });
 
   it("sign out calls signOut and navigates home", async () => {
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    const signOutItem = await screen.findByText("Sign out");
-    fireEvent.click(signOutItem);
+    await waitFor(() => {
+      const menuItems = document.querySelectorAll('[role="menuitem"]');
+      const signOutItem = Array.from(menuItems).find(el => el.textContent?.includes("Sign out"));
+      expect(signOutItem).toBeTruthy();
+      if (signOutItem) fireEvent.click(signOutItem);
+    });
     expect(mockSignOut).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
