@@ -17,6 +17,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addItem, items } = useCart();
+  const { formatPrice } = useCurrency();
   const [qty, setQty] = useState(1);
   const { data: product, isLoading } = useProduct(id || "");
   const { data: ratingData } = useProductRating(id || "");
