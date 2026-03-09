@@ -21,6 +21,9 @@ vi.mock("@/integrations/supabase/client", () => {
   };
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { __mockSelect: mockSelect, __mockRpc: mockRpc } = await vi.importMock<any>("@/integrations/supabase/client");
+
 import { useProductReviews, useProductRating, useProductRatings, useUserReviewForProduct } from "@/hooks/useReviews";
 
 function createWrapper() {
