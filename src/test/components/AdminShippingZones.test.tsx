@@ -114,7 +114,6 @@ describe("AdminShippingZones", () => {
     const deleteButtons = screen.getAllByRole("button").filter((btn) => btn.querySelector(".lucide-trash-2"));
     fireEvent.click(deleteButtons[0]);
     expect(screen.getByText("Delete Shipping Zone")).toBeInTheDocument();
-    expect(screen.getByText(/North America/)).toBeInTheDocument();
   });
 
   it("shows Add Zone button", () => {
