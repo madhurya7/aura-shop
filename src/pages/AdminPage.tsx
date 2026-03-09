@@ -253,8 +253,7 @@ export default function AdminPage() {
     } else {
       // New products get the next display_order (end of list)
       const maxOrder = products?.reduce((max, p) => Math.max(max, p.display_order), 0) || 0;
-      payload.display_order = maxOrder + 1;
-      ({ error } = await supabase.from("products").insert(payload));
+      ({ error } = await supabase.from("products").insert({ ...payload, display_order: maxOrder + 1 } as any));
     }
 
     if (error) {
