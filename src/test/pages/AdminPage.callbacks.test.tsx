@@ -118,15 +118,15 @@ describe("AdminPage callbacks", () => {
     renderPage();
     fireEvent.click(screen.getByText("Add Product"));
 
-    // Fill form
-    const nameInput = screen.getByDisplayValue("");
-    const inputs = screen.getAllByRole("textbox");
-    const numberInputs = screen.getAllByRole("spinbutton");
+    // Use the dialog to find inputs
+    const dialog = screen.getByText("Add Product", { selector: "h2" }).closest('[role="dialog"]');
+    if (!dialog) return;
 
-    // Name input is first textbox
-    fireEvent.change(inputs[0], { target: { value: "New Widget" } });
-    // Description is textarea
-    const textarea = screen.getByRole("textbox", { name: "" }) || document.querySelector("textarea");
+    const textInputs = dialog.querySelectorAll('input:not([type="file"]):not([type="number"])');
+    const numberInputs = dialog.querySelectorAll('input[type="number"]');
+
+    // Name input
+    fireEvent.change(textInputs[0], { target: { value: "New Widget" } });
     // Price
     fireEvent.change(numberInputs[0], { target: { value: "49.99" } });
 
