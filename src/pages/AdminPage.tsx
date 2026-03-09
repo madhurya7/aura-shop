@@ -328,6 +328,7 @@ export default function AdminPage() {
         <TabsList className="mb-6">
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="shipping">Shipping Zones</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
