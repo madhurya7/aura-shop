@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                   <p className="text-xs text-muted-foreground">{zone?.standard_days || "7-14 days"}</p>
                 </div>
                 <span className="font-heading font-bold">
-                  {isFreeDelivery ? <span className="text-green-600">FREE</span> : zone ? `${zone.currency_symbol}${zone.standard_rate.toFixed(2)}` : "—"}
+                  {isFreeStandard ? <span className="text-green-600">FREE</span> : zone ? `${zone.currency_symbol}${zone.standard_rate.toFixed(2)}` : "—"}
                 </span>
               </div>
             </button>
