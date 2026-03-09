@@ -21,6 +21,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, index = 0, rating }: ProductCardProps) {
   const { addItem, items } = useCart();
   const { user } = useAuth();
+  const { formatPrice } = useCurrency();
   const { data: favoriteSet } = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const isFavorited = favoriteSet?.has(product.id) || false;
