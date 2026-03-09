@@ -44,6 +44,18 @@ vi.mock("@/context/CartContext", () => ({
   }),
 }));
 
+vi.mock("@/context/CurrencyContext", () => ({
+  useCurrency: () => ({
+    zone: null,
+    formatPrice: (p: number) => `$${p.toFixed(2)}`,
+    convertPrice: (p: number) => p,
+    currencySymbol: "$",
+    currencyCode: "USD",
+    countryCode: "US",
+    setCountryCode: vi.fn(),
+  }),
+}));
+
 vi.mock("@/components/ProductReviews", () => ({
   default: () => <div data-testid="product-reviews">Reviews</div>,
 }));

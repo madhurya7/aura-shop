@@ -39,6 +39,18 @@ vi.mock("@/lib/productImages", () => ({
   getProductImage: (url: string) => url || "/placeholder.svg",
 }));
 
+vi.mock("@/context/CurrencyContext", () => ({
+  useCurrency: () => ({
+    zone: null,
+    formatPrice: (p: number) => `$${p.toFixed(2)}`,
+    convertPrice: (p: number) => p,
+    currencySymbol: "$",
+    currencyCode: "USD",
+    countryCode: "US",
+    setCountryCode: vi.fn(),
+  }),
+}));
+
 import FavoritesPage from "@/pages/FavoritesPage";
 
 const renderPage = () => {
