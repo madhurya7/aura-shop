@@ -109,7 +109,7 @@ export default function CartPage() {
             <div className="border-t mt-4 pt-4">
               <div className="flex justify-between font-heading font-bold text-lg">
                 <span>Total</span>
-                <span>${totalPrice.toFixed(2)}</span>
+                <span>{formatPrice(totalPrice)}</span>
               </div>
             </div>
             <Button className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90" size="lg" asChild>
