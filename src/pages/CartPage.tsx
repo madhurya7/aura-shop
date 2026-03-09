@@ -63,7 +63,7 @@ export default function CartPage() {
                     <h3 className="font-heading font-semibold truncate">{item.name}</h3>
                   </Link>
                   <p className="text-sm text-muted-foreground">{item.category}</p>
-                  <p className="font-heading font-bold mt-1">${Number(item.price).toFixed(2)}</p>
+                  <p className="font-heading font-bold mt-1">{formatPrice(item.price)}</p>
                   {overStock && (
                     <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                       <AlertTriangle className="h-3 w-3" />
