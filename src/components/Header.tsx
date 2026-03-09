@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, User, LogOut, Shield, Package, Heart } from "lucide-react";
+import { ShoppingCart, Search, User, LogOut, Shield, Package, Heart, Globe } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
+import { countries } from "@/lib/countries";
 
 export default function Header() {
   const { totalItems } = useCart();
