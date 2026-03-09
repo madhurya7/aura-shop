@@ -32,7 +32,7 @@ const emptyAddress = {
 export default function CheckoutPage() {
   const { user } = useAuth();
   const { items, totalPrice } = useCart();
-  const { zone, formatPrice, convertPrice, currencySymbol, currencyCode } = useCurrency();
+  const { zone, formatPrice, convertPrice, currencySymbol, currencyCode, countryCode, setCountryCode } = useCurrency();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
@@ -51,11 +51,8 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     postal_code: "",
-    country: "US",
+    country: countryCode,
   });
-
-  // Sync country to currency context
-  const { setCountryCode } = useCurrency();
   useEffect(() => {
     setCountryCode(form.country);
   }, [form.country, setCountryCode]);
