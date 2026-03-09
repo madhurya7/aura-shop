@@ -298,14 +298,14 @@ export default function CheckoutPage() {
               <p className="text-xs text-muted-foreground">
                 Shipping zone: <span className="font-medium text-foreground">{zone.name}</span>
               </p>
-              {isFreeDelivery && (
+              {isFreeStandard && (
                 <p className="text-xs font-medium text-green-600">
-                  🎉 Free delivery! Your order exceeds {formatPrice(zone.free_delivery_above)}.
+                  🎉 Free standard delivery! Your order exceeds {formatPrice(zone.free_delivery_above)}.
                 </p>
               )}
-              {!isFreeDelivery && zone.free_delivery_above > 0 && (
+              {!isFreeStandard && zone.free_delivery_above > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Add {formatPrice(zone.free_delivery_above - totalPrice)} more for free delivery
+                  Add {formatPrice(zone.free_delivery_above - totalPrice)} more for free standard delivery
                 </p>
               )}
             </div>
