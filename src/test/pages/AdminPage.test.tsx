@@ -356,7 +356,7 @@ describe("AdminPage", () => {
       { id: "p1", name: "With Image", description: "", price: 10, category: "Cat", stock_quantity: 1, image_url: "https://example.com/product.jpg", created_at: "", updated_at: "", display_order: 1 },
     ];
     renderPage();
-    const img = screen.getByAlt("With Image");
+    const img = screen.getByRole("img", { name: "With Image" });
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "https://example.com/product.jpg");
   });
