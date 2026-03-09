@@ -3,25 +3,23 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
 
-const mockSelect = vi.fn();
-const mockEq = vi.fn();
-const mockOrder = vi.fn();
-const mockRange = vi.fn();
-const mockIn = vi.fn();
-const mockMaybeSingle = vi.fn();
-const mockInsert = vi.fn();
-const mockSingle = vi.fn();
-const mockRpc = vi.fn();
-
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: mockSelect,
-      insert: mockInsert,
-    })),
-    rpc: mockRpc,
-  },
-}));
+vi.mock("@/integrations/supabase/client", () => {
+  const mockSelect = vi.fn();
+  const mockInsert = vi.fn();
+  const mockRpc = vi.fn();
+  return {
+    supabase: {
+      from: vi.fn(() => ({
+        select: mockSelect,
+        insert: mockInsert,
+      })),
+      rpc: mockRpc,
+    },
+    __mockSelect: mockSelect,
+    __mockInsert: mockInsert,
+    __mockRpc: mockRpc,
+  };
+});
 
 import { useProductReviews, useProductRating, useProductRatings, useUserReviewForProduct } from "@/hooks/useReviews";
 
