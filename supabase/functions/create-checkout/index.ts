@@ -67,7 +67,7 @@ serve(async (req) => {
     }
 
     // Create checkout session with price_data for dynamic cart items
-    const lineItems = items.map((item: any) => ({
+    const lineItems: any[] = items.map((item: any) => ({
       price_data: {
         currency: "usd",
         product_data: {
@@ -77,6 +77,20 @@ serve(async (req) => {
       },
       quantity: item.quantity,
     }));
+
+    // Add shipping as a line item
+    if (resolvedShippingCost > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `Shipping (${resolvedShippingMethod === "express" ? "Express" : "Standard"} - ${shippingZone || "Standard"})`,
+          },
+          unit_amount: Math.round(resolvedShippingCost * 100),
+        },
+        quantity: 1,
+      });
+    }
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
