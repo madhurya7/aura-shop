@@ -53,20 +53,28 @@ export default function CheckoutPage() {
     postal_code: "",
     country: countryCode,
   });
+
+  // Sync country to currency context
   useEffect(() => {
     setCountryCode(form.country);
   }, [form.country, setCountryCode]);
 
+  // Free delivery check
+  const isFreeDelivery = useMemo(() => {
+    if (!zone || !zone.free_delivery_above || zone.free_delivery_above <= 0) return false;
+    return totalPrice >= zone.free_delivery_above;
+  }, [zone, totalPrice]);
+
   // Shipping cost calculation
   const shippingCostLocal = useMemo(() => {
-    if (!zone) return 0;
+    if (isFreeDelivery || !zone) return 0;
     return shippingMethod === "express" ? zone.express_rate : zone.standard_rate;
-  }, [zone, shippingMethod]);
+  }, [zone, shippingMethod, isFreeDelivery]);
 
   const shippingCostUsd = useMemo(() => {
-    if (!zone) return 0;
+    if (isFreeDelivery || !zone) return 0;
     return shippingCostLocal / (zone.exchange_rate || 1);
-  }, [shippingCostLocal, zone]);
+  }, [shippingCostLocal, zone, isFreeDelivery]);
 
   const deliveryTime = useMemo(() => {
     if (!zone) return "";
@@ -284,9 +292,21 @@ export default function CheckoutPage() {
             <Truck className="h-5 w-5" /> Shipping Method
           </h2>
           {zone && (
-            <p className="text-xs text-muted-foreground">
-              Shipping zone: <span className="font-medium text-foreground">{zone.name}</span>
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">
+                Shipping zone: <span className="font-medium text-foreground">{zone.name}</span>
+              </p>
+              {isFreeDelivery && (
+                <p className="text-xs font-medium text-green-600">
+                  🎉 Free delivery! Your order exceeds {formatPrice(zone.free_delivery_above)}.
+                </p>
+              )}
+              {!isFreeDelivery && zone.free_delivery_above > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Add {formatPrice(zone.free_delivery_above - totalPrice)} more for free delivery
+                </p>
+              )}
+            </div>
           )}
           <div className="grid gap-2">
             <button type="button" onClick={() => setShippingMethod("standard")}
@@ -297,7 +317,7 @@ export default function CheckoutPage() {
                   <p className="text-xs text-muted-foreground">{zone?.standard_days || "7-14 days"}</p>
                 </div>
                 <span className="font-heading font-bold">
-                  {zone ? `${zone.currency_symbol}${zone.standard_rate.toFixed(2)}` : "—"}
+                  {isFreeDelivery ? <span className="text-green-600">FREE</span> : zone ? `${zone.currency_symbol}${zone.standard_rate.toFixed(2)}` : "—"}
                 </span>
               </div>
             </button>
@@ -309,7 +329,7 @@ export default function CheckoutPage() {
                   <p className="text-xs text-muted-foreground">{zone?.express_days || "3-5 days"}</p>
                 </div>
                 <span className="font-heading font-bold">
-                  {zone ? `${zone.currency_symbol}${zone.express_rate.toFixed(2)}` : "—"}
+                  {isFreeDelivery ? <span className="text-green-600">FREE</span> : zone ? `${zone.currency_symbol}${zone.express_rate.toFixed(2)}` : "—"}
                 </span>
               </div>
             </button>
@@ -337,7 +357,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>Shipping ({shippingMethod === "express" ? "Express" : "Standard"})</span>
-              <span>{zone ? `${zone.currency_symbol}${shippingCostLocal.toFixed(2)}` : "—"}</span>
+              <span>{isFreeDelivery ? <span className="text-green-600 font-medium">FREE</span> : zone ? `${zone.currency_symbol}${shippingCostLocal.toFixed(2)}` : "—"}</span>
             </div>
           </div>
           <div className="border-t mt-3 pt-3 flex justify-between font-heading font-bold text-lg">
