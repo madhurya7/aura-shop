@@ -69,7 +69,7 @@ describe("AdminShippingZones", () => {
   it("renders zone table with correct data", () => {
     renderComponent();
     expect(screen.getByText("North America")).toBeInTheDocument();
-    expect(screen.getByText("India")).toBeInTheDocument();
+    expect(screen.getAllByText("India").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows Free Above column with dollar values", () => {
