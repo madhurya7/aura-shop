@@ -86,16 +86,17 @@ describe("ProductCard", () => {
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it("shows error toast when trying to add out of stock item", () => {
+  it("disables Add button when out of stock", () => {
     renderCard({ ...baseProduct, stock_quantity: 0 });
-    fireEvent.click(screen.getByText("Sold Out"));
-    expect(toast.error).toHaveBeenCalledWith("This product is out of stock");
+    const soldOutBtn = screen.getByText("Sold Out").closest("button");
+    expect(soldOutBtn).toBeDisabled();
   });
 
   it("renders star rating when provided", () => {
     renderCard(baseProduct, { avg_rating: 4.5, review_count: 12 });
-    expect(screen.getByText("4.5")).toBeInTheDocument();
-    expect(screen.getByText("(12)")).toBeInTheDocument();
+    // Rating value and count are in the same span, split by whitespace
+    expect(screen.getByText(/4\.5/)).toBeInTheDocument();
+    expect(screen.getByText(/\(12\)/)).toBeInTheDocument();
   });
 
   it("does not render star rating when not provided", () => {
