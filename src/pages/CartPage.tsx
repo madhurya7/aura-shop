@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
+  const { formatPrice } = useCurrency();
   const { data: products } = useAllProducts();
   const navigate = useNavigate();
 
