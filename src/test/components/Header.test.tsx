@@ -81,9 +81,11 @@ describe("Header", () => {
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    // Name may be split across elements, use a function matcher
-    const nameEl = await screen.findByText((content, el) => el?.textContent?.includes("John Doe") || false);
-    expect(nameEl).toBeInTheDocument();
+    await waitFor(() => {
+      const menuItems = document.querySelectorAll('[role="menuitem"]');
+      const nameItem = Array.from(menuItems).find(el => el.textContent?.includes("John Doe"));
+      expect(nameItem).toBeTruthy();
+    });
   });
 
   it("shows admin dashboard link for admin users", async () => {
@@ -91,7 +93,11 @@ describe("Header", () => {
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    expect(await screen.findByText("Admin Dashboard")).toBeInTheDocument();
+    await waitFor(() => {
+      const menuItems = document.querySelectorAll('[role="menuitem"]');
+      const adminItem = Array.from(menuItems).find(el => el.textContent?.includes("Admin Dashboard"));
+      expect(adminItem).toBeTruthy();
+    });
   });
 
   it("does not show admin link for non-admin users", async () => {
@@ -99,9 +105,11 @@ describe("Header", () => {
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    // Wait a tick for dropdown to render
-    await new Promise(r => setTimeout(r, 50));
-    expect(screen.queryByText("Admin Dashboard")).not.toBeInTheDocument();
+    await waitFor(() => {
+      const menuItems = document.querySelectorAll('[role="menuitem"]');
+      const adminItem = Array.from(menuItems).find(el => el.textContent?.includes("Admin Dashboard"));
+      expect(adminItem).toBeFalsy();
+    });
   });
 
   it("shows login link when not authenticated", () => {
