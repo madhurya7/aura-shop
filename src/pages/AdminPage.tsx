@@ -400,6 +400,10 @@ export default function AdminPage() {
         <TabsContent value="orders">
           <AdminOrders />
         </TabsContent>
+
+        <TabsContent value="shipping">
+          <AdminShippingZones />
+        </TabsContent>
       </Tabs>
 
       {/* Add/Edit Dialog */}
