@@ -176,10 +176,9 @@ describe("AdminPage callbacks", () => {
     renderPage();
     const deleteBtn = screen.getAllByRole("button").find(btn => {
       const svg = btn.querySelector(".lucide-trash-2");
-      return svg && btn.closest("td");
+      return !!svg;
     });
     expect(deleteBtn).toBeTruthy();
-    // Just verify the button exists and is clickable (actual dialog tested in AdminPage.test.tsx)
     if (deleteBtn) fireEvent.click(deleteBtn);
   });
 

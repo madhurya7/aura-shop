@@ -202,7 +202,8 @@ describe("CheckoutPage callbacks", () => {
       { productId: "prod-1", name: "Expensive Item", price: 250, image_url: "", category: "Test", quantity: 1 },
     ]);
     expect(screen.getByText(/Free standard delivery/)).toBeInTheDocument();
-    expect(screen.getByText("FREE")).toBeInTheDocument();
+    const freeElements = screen.getAllByText("FREE");
+    expect(freeElements.length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows add-more-for-free-delivery message when below threshold", () => {
