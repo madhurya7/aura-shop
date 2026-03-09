@@ -16,7 +16,7 @@ export default function HeroSection() {
       <div className="relative px-8 py-20 sm:px-12 sm:py-28 lg:py-36 max-w-xl">
         <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-foreground leading-tight">
           Handcrafted with<br />
-          <span className="text-accent">Heart</span> & Soul.
+          <span className="text-amber-300 font-extrabold">Heart</span> & Soul.
         </h1>
         <p className="mt-4 text-primary-foreground/80 text-base sm:text-lg max-w-md">
           Discover our curated collection of artisan goods — handloom fabrics, handmade jewelry, pottery, and more.
