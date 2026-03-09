@@ -28,7 +28,7 @@ export function useProducts(search?: string, category?: string | null) {
       let query = supabase
         .from("products")
         .select("*")
-        .order("created_at", { ascending: false })
+        .order("display_order", { ascending: true })
         .range(from, to);
 
       if (search) {
