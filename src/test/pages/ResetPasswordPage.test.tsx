@@ -2,8 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-const mockNavigate = vi.fn();
-const mockUpdateUser = vi.fn();
+const { mockNavigate, mockUpdateUser } = vi.hoisted(() => ({
+  mockNavigate: vi.fn(),
+  mockUpdateUser: vi.fn(),
+}));
+
 let authStateCallback: any;
 
 vi.mock("react-router-dom", async () => {
@@ -14,7 +17,7 @@ vi.mock("react-router-dom", async () => {
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
-      onAuthStateChange: vi.fn((cb) => {
+      onAuthStateChange: vi.fn((cb: any) => {
         authStateCallback = cb;
         return { data: { subscription: { unsubscribe: vi.fn() } } };
       }),
@@ -36,9 +39,8 @@ describe("ResetPasswordPage", () => {
     mockUpdateUser.mockClear();
     vi.mocked(toast.error).mockClear();
     vi.mocked(toast.success).mockClear();
-    // Reset hash
     Object.defineProperty(window, "location", {
-      value: { ...window.location, hash: "" },
+      value: { ...window.location, hash: "", origin: "http://localhost" },
       writable: true,
     });
   });
