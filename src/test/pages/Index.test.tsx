@@ -1,6 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+
+// Mock IntersectionObserver for jsdom
+beforeAll(() => {
+  global.IntersectionObserver = class {
+    constructor(private cb: IntersectionObserverCallback) {}
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as any;
+});
 
 const mockProducts = [
   { id: "p1", name: "Scarf", description: "Warm", price: 30, category: "Handloom", stock_quantity: 5, image_url: "", created_at: "", updated_at: "", display_order: 1 },

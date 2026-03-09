@@ -135,19 +135,20 @@ describe("Header", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("shows email when user has no first name", () => {
+  it("shows email when user has no first name", async () => {
     mockUser = { id: "u1", email: "test@test.com", user_metadata: {} };
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    expect(screen.getByText("test@test.com")).toBeInTheDocument();
+    expect(await screen.findByText("test@test.com")).toBeInTheDocument();
   });
 
-  it("sign out calls signOut and navigates home", () => {
+  it("sign out calls signOut and navigates home", async () => {
     renderHeader();
     const userBtn = screen.getAllByRole("button").find(b => b.querySelector(".lucide-user"));
     if (userBtn) fireEvent.click(userBtn);
-    fireEvent.click(screen.getByText("Sign out"));
+    const signOutItem = await screen.findByText("Sign out");
+    fireEvent.click(signOutItem);
     expect(mockSignOut).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
