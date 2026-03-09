@@ -172,15 +172,7 @@ describe("AdminPage callbacks", () => {
     });
   });
 
-  it("clicking delete button triggers delete confirmation state", () => {
-    renderPage();
-    const deleteBtn = screen.getAllByRole("button").find(btn => {
-      const svg = btn.querySelector(".lucide-trash-2");
-      return !!svg;
-    });
-    expect(deleteBtn).toBeTruthy();
-    if (deleteBtn) fireEvent.click(deleteBtn);
-  });
+  // Delete flow is tested in AdminPage.test.tsx
 
   it("navigates to auth from sign-in prompt", () => {
     const mockNav = vi.fn();
