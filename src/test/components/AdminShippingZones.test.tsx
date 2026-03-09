@@ -111,8 +111,11 @@ describe("AdminShippingZones", () => {
 
   it("opens delete confirmation dialog", () => {
     renderComponent();
-    const deleteButtons = screen.getAllByRole("button").filter((btn) => btn.querySelector(".lucide-trash-2"));
-    fireEvent.click(deleteButtons[0]);
+    // Icon buttons use size="icon", find by looking for svg with trash class
+    const allButtons = screen.getAllByRole("button");
+    const deleteBtn = allButtons.find((btn) => btn.innerHTML.includes("lucide-trash"));
+    expect(deleteBtn).toBeTruthy();
+    fireEvent.click(deleteBtn!);
     expect(screen.getByText("Delete Shipping Zone")).toBeInTheDocument();
   });
 
