@@ -32,7 +32,10 @@ serve(async (req) => {
       user = data.user;
     }
 
-    const { items, email, shippingAddress } = await req.json();
+    const { items, email, shippingAddress, shippingMethod, shippingCost, shippingZone } = await req.json();
+
+    const resolvedShippingCost = typeof shippingCost === "number" ? shippingCost : 0;
+    const resolvedShippingMethod = shippingMethod || "standard";
 
     if (!items?.length) throw new Error("No items provided");
     if (!email) throw new Error("Email is required");
