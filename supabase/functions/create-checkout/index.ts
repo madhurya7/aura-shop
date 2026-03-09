@@ -111,7 +111,7 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    const totalPrice = items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0);
+    const totalPrice = items.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0) + resolvedShippingCost;
 
     const { data: order, error: orderError } = await serviceClient
       .from("orders")
