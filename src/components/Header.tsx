@@ -51,6 +51,20 @@ export default function Header() {
         </form>
 
         <div className="flex items-center gap-2 ml-auto">
+          {/* Currency/Country selector */}
+          <Select value={countryCode} onValueChange={setCountryCode}>
+            <SelectTrigger className="w-auto gap-1 border-0 bg-transparent text-xs font-medium h-8 px-2">
+              <Globe className="h-3.5 w-3.5" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {countries.map((c) => (
+                <SelectItem key={c.code} value={c.code} className="text-xs">{c.code} - {c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground hidden sm:inline">{currencySymbol}{cc}</span>
+
           <Button variant="ghost" size="icon" className="sm:hidden" onClick={() => navigate("/?search=")}>
             <Search className="h-5 w-5" />
           </Button>
