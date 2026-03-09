@@ -27,6 +27,7 @@ interface ZoneForm {
   express_rate: string;
   standard_days: string;
   express_days: string;
+  free_delivery_above: string;
 }
 
 const emptyForm: ZoneForm = {
@@ -39,6 +40,7 @@ const emptyForm: ZoneForm = {
   express_rate: "0",
   standard_days: "7-14 days",
   express_days: "3-5 days",
+  free_delivery_above: "200",
 };
 
 export default function AdminShippingZones() {
@@ -69,6 +71,7 @@ export default function AdminShippingZones() {
       express_rate: String(zone.express_rate),
       standard_days: zone.standard_days,
       express_days: zone.express_days,
+      free_delivery_above: String(zone.free_delivery_above),
     });
     setDialogOpen(true);
   };
@@ -90,6 +93,7 @@ export default function AdminShippingZones() {
       express_rate: parseFloat(form.express_rate) || 0,
       standard_days: form.standard_days,
       express_days: form.express_days,
+      free_delivery_above: parseFloat(form.free_delivery_above) || 0,
     };
 
     try {
@@ -145,6 +149,7 @@ export default function AdminShippingZones() {
               <TableHead>Currency</TableHead>
               <TableHead className="text-right">Standard</TableHead>
               <TableHead className="text-right">Express</TableHead>
+              <TableHead className="text-right">Free Above</TableHead>
               <TableHead className="text-right">Exchange Rate</TableHead>
               <TableHead className="w-24 text-right">Actions</TableHead>
             </TableRow>
@@ -176,6 +181,9 @@ export default function AdminShippingZones() {
                   {zone.currency_symbol}{zone.express_rate}
                   <span className="text-xs text-muted-foreground ml-1">({zone.express_days})</span>
                 </TableCell>
+                <TableCell className="text-right font-medium text-sm">
+                  {zone.free_delivery_above > 0 ? `$${zone.free_delivery_above}` : "—"}
+                </TableCell>
                 <TableCell className="text-right font-mono text-sm">
                   {zone.exchange_rate}x
                 </TableCell>
@@ -193,7 +201,7 @@ export default function AdminShippingZones() {
             ))}
             {(!zones || zones.length === 0) && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                   No shipping zones defined. Add your first zone!
                 </TableCell>
               </TableRow>
@@ -254,6 +262,11 @@ export default function AdminShippingZones() {
                 <Label>Express Delivery Time</Label>
                 <Input value={form.express_days} onChange={(e) => setForm({ ...form, express_days: e.target.value })} placeholder="3-5 days" />
               </div>
+            </div>
+            <div>
+              <Label>Free Delivery Above (USD cart total, 0 = no free delivery)</Label>
+              <Input type="number" step="1" min="0" value={form.free_delivery_above} onChange={(e) => setForm({ ...form, free_delivery_above: e.target.value })} placeholder="200" />
+              <p className="text-xs text-muted-foreground mt-1">If cart subtotal (in USD) exceeds this amount, shipping is free.</p>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
